@@ -1,2 +1,6 @@
+from sack.cli import get_arguments
+
+
 def main() -> None:
-    print("Hello from sack!")
+    args = get_arguments()
+    args.func(args)
