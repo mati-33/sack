@@ -1,0 +1,17 @@
+[project]
+name = "sack"
+version = "0.1.0"
+description = "Python socket chat"
+readme = "README.md"
+authors = [
+    { name = "mati", email = "mati@mati.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+sack = "sack:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
