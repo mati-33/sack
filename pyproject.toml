@@ -10,7 +10,7 @@ requires-python = ">=3.12"
 dependencies = []
 
 [project.scripts]
-sack = "sack:main"
+sack = "sack.main:main"
 
 [build-system]
 requires = ["hatchling"]
