@@ -32,14 +32,30 @@ class Server:
 
         while True:
             events = self._registry.select()
-            for key, _ in events:
+            for key, mask in events:
                 assert isinstance(key.fileobj, socket.socket)
                 if key.fileobj is self._socket:
-                    log.info("connection incoming")
+                    self._accept_connection()
                 elif key.fileobj is self._controller:
                     self._controller.recv(1)
                     log.info("stopping server")
                     return
+                else:
+                    assert mask == selectors.EVENT_READ
+                    data = key.fileobj.recv(1024)
+                    if not data:
+                        log.info("client disconnects")
+                        key.fileobj.close()
+                        self._registry.unregister(key.fileobj)
+                    else:
+                        data_decoded = data.decode()
+                        log.info("message from client: %s", data_decoded)
+
+    def _accept_connection(self):
+        conn, addr = self._socket.accept()
+        conn.setblocking(False)
+        self._registry.register(conn, selectors.EVENT_READ)
+        log.info("Accepted connection from %s", addr)
 
     def __enter__(self):
         return self
