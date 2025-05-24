@@ -2,6 +2,7 @@ import signal
 import socket
 
 from sack.cli import HasHostPort, get_args
+from sack.client import Client
 from sack.server import Server
 
 
@@ -26,6 +27,5 @@ def server_callback(args: HasHostPort) -> None:
 
 
 def client_callback(args: HasHostPort) -> None:
-    print("client")
-    print(f"host: {args.host}")
-    print(f"port: {args.port}")
+    with Client(args.host, args.port) as c:
+        c.connect()
