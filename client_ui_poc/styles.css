@@ -1,0 +1,42 @@
+#input {
+    dock: bottom;
+}
+
+#messages {
+    scrollbar-size-vertical: 0;
+}
+
+.msg-container {
+    height: auto;
+}
+
+.msg {
+    width: auto;
+    max-width: 70w;
+    height: auto;
+    max-height: 50;
+    padding: 1;
+    margin-bottom: 1;
+    background: $boost;
+}
+
+.msg.right {
+    border-right: solid red;
+}
+
+.msg.left {
+    border-left: solid blue;
+}
+
+.right {
+    align: right middle;
+}
+
+.msg-text {
+    text-overflow: fold;
+    max-width: 100%;
+}
+
+.author {
+    color: $foreground-muted;
+}
