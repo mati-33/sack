@@ -1,5 +1,21 @@
 #input {
-    dock: bottom;
+    height: auto;
+    max-height: 8;
+    margin-bottom: 1;
+    padding: 1;
+}
+
+.text-area--cursor-line {
+    background: $surface;
+}
+
+Screen {
+    align: center top;
+}
+
+#content {
+    width: auto;
+    max-width: 80;
 }
 
 #messages {
@@ -40,3 +56,13 @@
 .author {
     color: $foreground-muted;
 }
+
+.notification {
+    height: auto;
+    color: $foreground-muted;
+    text-align: center;
+    align: center middle;
+    width: 100%;
+    margin-bottom: 1;
+}
+

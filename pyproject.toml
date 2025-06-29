@@ -7,7 +7,9 @@ authors = [
     { name = "mati", email = "mati@mati.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "textual>=3.5.0",
+]
 
 [project.scripts]
 sack = "sack.main:main"
@@ -15,3 +17,8 @@ sack = "sack.main:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "textual-dev>=1.7.0",
+]
