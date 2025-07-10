@@ -1,31 +1,55 @@
-import signal
-import socket
+from argparse import ArgumentParser
+from typing import Sequence
 
-from sack.cli import HasHostPort, get_args
-from sack.client import Client
-from sack.server import Server
+from sack.client import client_controller
+from sack.server import server_controller
+
+SACK_ASCII = r"""
+                    _    
+     ___  __ _  ___| | __
+    / __|/ _` |/ __| |/ /
+    \__ \ (_| | (__|   < 
+    |___/\__,_|\___|_|\_\
+
+"""
 
 
 def main() -> None:
-    args = get_args(
-        server_callback=server_callback,
-        client_callback=client_callback,
-    )
+    args = get_args()
     args.func(args)
 
 
-def server_callback(args: HasHostPort) -> None:
-    controller_r, controller_w = socket.socketpair()
+def get_args(args: Sequence[str] | None = None):
+    def call_help(_):
+        print(SACK_ASCII)
+        parser.print_help()
 
-    def sigint_handler(*_):
-        controller_w.send(b"\0")
+    parser = ArgumentParser()
+    parser.set_defaults(func=call_help)
+    subparsers = parser.add_subparsers()
 
-    signal.signal(signal.SIGINT, sigint_handler)
+    server_subparser = subparsers.add_parser("server")
+    server_subparser.add_argument(
+        "-p",
+        "--port",
+        type=int,
+        required=False,
+        default=8080,
+    )
+    server_subparser.add_argument("--host", required=False, default="localhost")
+    server_subparser.set_defaults(func=server_controller)
 
-    with Server(args.host, args.port, controller_r) as s:
-        s.serve()
+    client_subparser = subparsers.add_parser("client")
+    client_subparser.add_argument(
+        "-p",
+        "--port",
+        type=int,
+        required=False,
+        default=8080,
+    )
+    client_subparser.add_argument("--host", required=False, default="localhost")
+    client_subparser.add_argument("--username", required=True)
+    client_subparser.set_defaults(func=client_controller)
 
-
-def client_callback(args: HasHostPort) -> None:
-    with Client(args.host, args.port) as c:
-        c.connect()
+    arguments = parser.parse_args(args)
+    return arguments

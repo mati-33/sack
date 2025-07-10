@@ -1,39 +1,66 @@
 import socket
+import threading
+from typing import Protocol
+
+from sack.protocol import Message, receive_message
 
 
-class Client:
-    def __init__(self, host: str, port: int) -> None:
+class SPClient:
+    def __init__(self, *, host: str, port: int, username: str) -> None:
         self.host = host
         self.port = port
-
+        self.username = username
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._open = False
 
-    def connect(self):
-        try:
-            self._socket.connect((self.host, self.port))
-            self._open = True
-        except ConnectionRefusedError:
-            print("Server is not running")
-            return
+    def connect(self) -> None:
+        self._socket.connect((self.host, self.port))  # ConnectionRefused
+        msg = Message("CONNECT", self.username)
+        self._socket.sendall(msg.to_bytes())
 
+    def disconnect(self) -> None:
+        self._socket.shutdown(socket.SHUT_RDWR)
+        self._socket.close()
+
+    def send_text(self, text: str) -> None:
+        msg = Message("TEXT", self.username, text)
+        self._socket.sendall(msg.to_bytes())
+
+    def receive_message(self) -> Message | None:
+        def on_empty():
+            raise Exception("server is down")
+
+        return receive_message(self._socket, on_empty)
+
+
+class ClientControllerArgs(Protocol):
+    host: str
+    port: int
+    username: str
+
+
+def client_controller(args: ClientControllerArgs) -> None:
+    client = SPClient(host=args.host, port=args.port, username=args.username)
+    client.connect()
+
+    def listen():
         while True:
-            to_send = input("> ")
-            if to_send == ":q":
-                self._socket.send(b"")
-                break
-            self._socket.sendall(to_send.encode())
-            data = self._socket.recv(1024)
-            if not data:
-                print("Server disconnected")
-                break
-            else:
-                print(f"Server: {data.decode()}")
+            msg = client.receive_message()
+            if msg is None:
+                continue
+            if msg.username == args.username:
+                continue
+            if msg.type == "CONNECT":
+                print(f"{msg.username} joined")
+            if msg.type == "DISCONNECT":
+                print(f"{msg.username} disconnected")
+            if msg.type == "TEXT":
+                print(f"{msg.username}: {msg.text}")
 
-    def __enter__(self):
-        return self
+    listener = threading.Thread(target=listen, daemon=True)
+    listener.start()
 
-    def __exit__(self, *_):
-        if self._open:
-            self._socket.shutdown(socket.SHUT_RDWR)
-            self._socket.close()
+    while True:
+        text = input()
+        if text == "q":
+            exit()
+        client.send_text(text)
