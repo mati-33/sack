@@ -2,13 +2,12 @@ import logging
 import os
 import queue
 import selectors
-import signal
 import socket
 import threading
 from dataclasses import dataclass
-from typing import Callable, Protocol, cast
+from typing import Callable, cast
 
-from sack.protocol import Message, receive_message
+from sack.models.protocol import SackMessage, receive_message
 
 log = logging.getLogger("server")
 blog = logging.getLogger("broadcaster")
@@ -22,7 +21,7 @@ class ClientData:
     username: str | None = None
 
 
-class Server:
+class SackServer:
     def __init__(self, host: str, port: int, controller: socket.socket) -> None:
         self.host = host
         self.port = port
@@ -81,6 +80,7 @@ class Server:
                         self._registry.unregister(key.fileobj)
                     if message.type == "CONNECT":
                         key.data.username = message.username
+                        # todo username uniquness check
                     self._broadcaster.broadcast(message.to_bytes())
 
     def _accept_connection(self):
@@ -89,9 +89,9 @@ class Server:
         self._registry.register(conn, selectors.EVENT_READ, ClientData())
         log.info("Accepted connection from %s", addr)
 
-    def _receive_client_message(self, socket: socket.socket) -> Message | None:
+    def _receive_client_message(self, socket: socket.socket) -> SackMessage | None:
         def on_empty():
-            return Message("DISCONNECT", "")
+            return SackMessage("DISCONNECT", "")
 
         return receive_message(socket, on_empty)
 
@@ -131,20 +131,3 @@ class Broadcaster:
             for conn in connections:
                 conn.sendall(msg)
             self._msg_queue.task_done()
-
-
-class ServerControllerArgs(Protocol):
-    host: str
-    port: int
-
-
-def server_controller(args: ServerControllerArgs) -> None:
-    controller_r, controller_w = socket.socketpair()
-
-    def sigint_handler(*_):
-        controller_w.send(b"\0")
-
-    signal.signal(signal.SIGINT, sigint_handler)
-
-    with Server(args.host, args.port, controller_r) as s:
-        s.serve()

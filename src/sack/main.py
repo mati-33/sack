@@ -1,55 +1,67 @@
-from argparse import ArgumentParser
-from typing import Sequence
+from enum import StrEnum
 
-from sack.client import client_controller
-from sack.server import server_controller
+from textual.app import App, ComposeResult
+from textual.binding import Binding
+from textual.containers import Container
+from textual.widgets import Static
+
+from sack.components import MenuOption
+from sack.models import SackClient
+from sack.screens import ChatScreen, ClientPromptScreen, ServerPromptScreen
 
 SACK_ASCII = r"""
-                    _    
-     ___  __ _  ___| | __
-    / __|/ _` |/ __| |/ /
-    \__ \ (_| | (__|   < 
-    |___/\__,_|\___|_|\_\
-
+   ▄████████    ▄████████  ▄████████    ▄█   ▄█▄ 
+  ███    ███   ███    ███ ███    ███   ███ ▄███▀ 
+  ███    █▀    ███    ███ ███    █▀    ███▐██▀   
+  ███          ███    ███ ███         ▄█████▀    
+▀███████████ ▀███████████ ███        ▀▀█████▄    
+         ███   ███    ███ ███    █▄    ███▐██▄   
+   ▄█    ███   ███    ███ ███    ███   ███ ▀███▄ 
+ ▄████████▀    ███    █▀  ████████▀    ███   ▀█▀ 
 """
 
 
-def main() -> None:
-    args = get_args()
-    args.func(args)
+class MenuOptionLabels(StrEnum):
+    SERVER = "1"
+    JOIN_ROOM = "2"
+    ABOUT = "3"
+    EXIT = "q"
 
 
-def get_args(args: Sequence[str] | None = None):
-    def call_help(_):
-        print(SACK_ASCII)
-        parser.print_help()
+class SackApp(App):
+    CSS_PATH = "styles.css"
+    SCREENS = {
+        "1": ServerPromptScreen,
+        "2": ClientPromptScreen,
+    }
+    BINDINGS = [
+        Binding(MenuOptionLabels.SERVER, "push_screen('1')", "Server port prompt"),
+        Binding(MenuOptionLabels.JOIN_ROOM, "client", "Client prompt"),
+        Binding(MenuOptionLabels.EXIT, "exit", "Quit the app"),
+    ]
 
-    parser = ArgumentParser()
-    parser.set_defaults(func=call_help)
-    subparsers = parser.add_subparsers()
+    def action_server(self): ...
 
-    server_subparser = subparsers.add_parser("server")
-    server_subparser.add_argument(
-        "-p",
-        "--port",
-        type=int,
-        required=False,
-        default=8080,
-    )
-    server_subparser.add_argument("--host", required=False, default="localhost")
-    server_subparser.set_defaults(func=server_controller)
+    def action_client(self):
+        def push_chat_screen(client: SackClient | None):
+            if client:
+                self.push_screen(ChatScreen(client))
 
-    client_subparser = subparsers.add_parser("client")
-    client_subparser.add_argument(
-        "-p",
-        "--port",
-        type=int,
-        required=False,
-        default=8080,
-    )
-    client_subparser.add_argument("--host", required=False, default="localhost")
-    client_subparser.add_argument("--username", required=True)
-    client_subparser.set_defaults(func=client_controller)
+        self.push_screen(ClientPromptScreen(), push_chat_screen)
 
-    arguments = parser.parse_args(args)
-    return arguments
+    def compose(self) -> ComposeResult:
+        with Container(id="content"):
+            yield Static(SACK_ASCII, id="header")
+            with Container(id="options"):
+                yield MenuOption("Server", "󰒋", MenuOptionLabels.SERVER)
+                yield MenuOption("Join room", "", MenuOptionLabels.JOIN_ROOM)
+                yield MenuOption("About", "", MenuOptionLabels.ABOUT)
+                yield MenuOption("Exit", "󰅖", MenuOptionLabels.EXIT)
+
+    def action_exit(self):
+        self.exit()
+
+
+def main(*_):
+    app = SackApp()
+    app.run()

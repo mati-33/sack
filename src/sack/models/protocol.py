@@ -2,7 +2,7 @@ import socket
 from typing import Callable, Literal, overload
 
 
-class Message:
+class SackMessage:
     type: Literal["CONNECT", "DISCONNECT", "TEXT"]
     username: str
     text: str | None
@@ -30,8 +30,8 @@ class Message:
         return message
 
 
-def receive_message(socket: socket.socket, on_empty: Callable) -> Message | None:
-    message_len = socket.recv(1)
+def receive_message(socket: socket.socket, on_empty: Callable) -> SackMessage | None:
+    message_len = socket.recv(1)  # ConnectionResetError
     if not message_len:
         return on_empty()
     message_len = int.from_bytes(message_len, "big")
@@ -45,11 +45,11 @@ def receive_message(socket: socket.socket, on_empty: Callable) -> Message | None
     if type not in ("CONNECT", "TEXT", "DISCONNECT"):
         return None
     if type != "TEXT":
-        return Message(type, username)
+        return SackMessage(type, username)
     sep = socket.recv(1)
     if sep != b"\n":
         return None
     text_len = socket.recv(2)
     text_len = int.from_bytes(text_len, "big")
     text = socket.recv(text_len).decode()
-    return Message(type, username, text)
+    return SackMessage(type, username, text)

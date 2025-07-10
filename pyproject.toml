@@ -13,6 +13,7 @@ dependencies = [
 
 [project.scripts]
 sack = "sack.main:main"
+dev = "sack.dev:main"
 
 [build-system]
 requires = ["hatchling"]

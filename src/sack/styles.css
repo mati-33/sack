@@ -1,0 +1,125 @@
+Screen {
+    align: center top;
+}
+
+ServerPromptScreen {
+    align: center middle;
+}
+
+ClientPromptScreen {
+    align: center middle;
+}
+
+MenuOption {
+    margin-bottom: 1;
+    .shortcut {
+        dock: right;
+        border-right: outer $secondary;
+    }
+}
+
+TextInput {
+    height: auto;
+    max-height: 8;
+    margin-bottom: 1;
+    padding: 1;
+
+    .text-area--cursor-line {
+        background: $surface;
+    }
+}
+
+#content {
+    max-width: 70;
+}
+
+#header {
+    margin-top: 3;
+    text-align: center;
+    border-right: outer $secondary;
+}
+
+#options {
+    margin-top: 5;
+}
+
+#server-prompt {
+    grid-size: 2;
+    grid-rows: 2fr 1fr 2fr;
+    grid-gutter: 1;
+    width: 40;
+    height: 10;
+    background: $background-darken-1;
+    align: center middle;
+    padding: 1;
+    border-right: outer $secondary;
+
+    Center {
+        column-span: 2;
+    }
+}
+
+#client-prompt {
+    grid-size: 2;
+    grid-rows: 2fr 1fr 1fr 1fr 2fr;
+    grid-gutter: 1;
+    width: 40;
+    height: 14;
+    background: $background-darken-1;
+    align: center middle;
+    padding: 1;
+    border-right: outer $secondary;
+
+    Center {
+        column-span: 2;
+    }
+}
+
+#messages {
+    scrollbar-size-vertical: 0;
+}
+
+.msg-container {
+    height: auto;
+}
+
+.msg {
+    width: auto;
+    max-width: 70w;
+    height: auto;
+    max-height: 50;
+    padding: 1;
+    margin-bottom: 1;
+    background: $boost;
+}
+
+.msg.right {
+    border-right: solid red;
+}
+
+.msg.left {
+    border-left: solid blue;
+}
+
+.right {
+    align: right middle;
+}
+
+.msg-text {
+    text-overflow: fold;
+    max-width: 100%;
+}
+
+.author {
+    color: $foreground-muted;
+}
+
+.notification {
+    height: auto;
+    color: $foreground-muted;
+    text-align: center;
+    align: center middle;
+    width: 100%;
+    margin-bottom: 1;
+}
+
