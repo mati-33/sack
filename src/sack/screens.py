@@ -70,6 +70,7 @@ class ClientPromptScreen(ModalScreen[SackClient]):
 class ChatScreen(Screen):
     BINDINGS = [
         Binding("enter", "send", "Send message", priority=True),
+        Binding("ctrl+c", "quit", "Quit app", priority=True),
     ]
 
     class MessageReceived(Message):
@@ -96,6 +97,10 @@ class ChatScreen(Screen):
         self.client.send_text(textarea.text)
         textarea.clear()
 
+    def action_quit(self):
+        self.client.disconnect()
+        self.app.exit()
+
     @on(MessageReceived)
     def on_message_received(self, event: MessageReceived):
         msg = event.msg
@@ -121,6 +126,7 @@ class ChatScreen(Screen):
 
     def on_mount(self):
         self.run_worker(self.update_messages, thread=True, exclusive=True)
+        self.query_one(TextInput).focus()
 
     def update_messages(self):
         while True:
