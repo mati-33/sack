@@ -1,3 +1,4 @@
+import logging
 import signal
 import socket
 import threading
@@ -8,6 +9,10 @@ from sack.models import SackClient, SackServer
 
 
 def main() -> None:
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s | %(levelname)s | %(name)s: %(message)s",
+    )
     args = get_args()
     args.func(args)
 

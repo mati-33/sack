@@ -11,9 +11,6 @@ from sack.models.protocol import SackMessage, receive_message
 
 log = logging.getLogger("server")
 blog = logging.getLogger("broadcaster")
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s | %(levelname)s | %(name)s: %(message)s"
-)
 
 
 @dataclass
