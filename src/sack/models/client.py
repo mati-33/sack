@@ -14,7 +14,10 @@ class SackClient:
         self._socket.connect((self.host, self.port))  # ConnectionRefused
         msg = SackMessage("CONNECT", self.username)
         self._socket.sendall(msg.to_bytes())
-        # self._socket.recv(2) - OK/NO
+        ok_no = self._socket.recv(2).decode()
+        if ok_no == "NO":
+            self.disconnect()
+            raise Exception("username not unique")
 
     def disconnect(self) -> None:
         self._socket.shutdown(socket.SHUT_RDWR)

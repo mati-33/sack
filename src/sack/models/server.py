@@ -17,6 +17,10 @@ blog = logging.getLogger("broadcaster")
 class ClientData:
     username: str | None = None
 
+    @property
+    def is_registered(self) -> bool:
+        return self.username is not None
+
 
 class SackServer:
     def __init__(self, host: str, port: int, controller: socket.socket) -> None:
@@ -34,12 +38,9 @@ class SackServer:
         self._registry.register(self._controller, selectors.EVENT_READ)
 
         def get_connections() -> list[socket.socket]:
-            sockets = [
-                s
-                for k in self._registry.get_map().values()
-                if (s := k.fileobj) not in (self._socket, self._controller)
-            ]
-            return cast(list[socket.socket], sockets)
+            return cast(
+                list[socket.socket], [key.fileobj for key in self._get_client_keys()]
+            )
 
         self._broadcaster = Broadcaster(connections_getter=get_connections)
 
@@ -70,14 +71,23 @@ class SackServer:
                     if message is None:
                         continue
                     log.info("received message of type %s", message.type)
+                    client_data: ClientData = key.data
+                    if message.type != "CONNECT" and not client_data.is_registered:
+                        continue
                     if message.type == "DISCONNECT":
                         message.username = key.data.username
                         log.info("client disconnects")
-                        key.fileobj.close()
-                        self._registry.unregister(key.fileobj)
+                        self._unregister(key.fileobj)
                     if message.type == "CONNECT":
-                        key.data.username = message.username
-                        # todo username uniquness check
+                        username = message.username
+                        if username in self._get_usernames():
+                            key.fileobj.sendall(b"NO")
+                            self._unregister(key.fileobj)
+                            continue
+                        else:
+                            key.fileobj.sendall(b"OK")
+                            key.data.username = message.username
+
                     self._broadcaster.broadcast(message.to_bytes())
 
     def _accept_connection(self):
@@ -86,11 +96,27 @@ class SackServer:
         self._registry.register(conn, selectors.EVENT_READ, ClientData())
         log.info("Accepted connection from %s", addr)
 
+    def _unregister(self, sock: socket.socket):
+        sock.close()
+        self._registry.unregister(sock)
+
     def _receive_client_message(self, socket: socket.socket) -> SackMessage | None:
         def on_empty():
             return SackMessage("DISCONNECT", "")
 
         return receive_message(socket, on_empty)
+
+    def _get_usernames(self) -> list[str]:
+        return [
+            username
+            for key in self._get_client_keys()
+            if (username := key.data.username)
+        ]
+
+    def _get_client_keys(self):
+        for key in self._registry.get_map().values():
+            if isinstance(key.data, ClientData):
+                yield key
 
     def __enter__(self):
         return self
