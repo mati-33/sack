@@ -55,14 +55,12 @@ class ServerControllerArgs(Protocol):
 
 
 def server_controller(args: ServerControllerArgs) -> None:
-    controller_r, controller_w = socket.socketpair()
-
     def sigint_handler(*_):
-        controller_w.send(b"\0")
+        s.stop()
 
     signal.signal(signal.SIGINT, sigint_handler)
 
-    with SackServer(args.host, args.port, controller_r) as s:
+    with SackServer(args.host, args.port) as s:
         s.serve()
 
 

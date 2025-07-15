@@ -23,7 +23,7 @@ class ClientData:
 
 
 class SackServer:
-    def __init__(self, host: str, port: int, controller: socket.socket) -> None:
+    def __init__(self, host: str, port: int) -> None:
         self.host = host
         self.port = port
 
@@ -31,11 +31,14 @@ class SackServer:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((host, port))
         self._socket = s
-        self._controller = controller
+
+        sock_read, sock_write = socket.socketpair()
+        self._STOP = sock_read
+        self._stop_controller = sock_write
 
         self._registry = selectors.DefaultSelector()
         self._registry.register(self._socket, selectors.EVENT_READ)
-        self._registry.register(self._controller, selectors.EVENT_READ)
+        self._registry.register(self._STOP, selectors.EVENT_READ)
 
         def get_connections() -> list[socket.socket]:
             return cast(
@@ -60,8 +63,8 @@ class SackServer:
                 if key.fileobj is self._socket:
                     self._accept_connection()
 
-                elif key.fileobj is self._controller:
-                    self._controller.recv(1)
+                elif key.fileobj is self._STOP:
+                    self._STOP.recv(1)
                     log.info("stopping server")
                     return
 
@@ -89,6 +92,9 @@ class SackServer:
                             key.data.username = message.username
 
                     self._broadcaster.broadcast(message.to_bytes())
+
+    def stop(self):
+        self._stop_controller.send(b"\0")
 
     def _accept_connection(self):
         conn, addr = self._socket.accept()
