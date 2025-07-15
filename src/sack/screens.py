@@ -85,6 +85,10 @@ class ChatScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Container(
+            Label(
+                f"[$secondary]#[/] {self.client.host}:{self.client.port}",
+                id="chat-header",
+            ),
             VerticalScroll(id="messages"),
             TextInput(compact=True),
             id="content",
@@ -106,6 +110,8 @@ class ChatScreen(Screen):
         msg = event.msg
         messages = self.query_one("#messages", VerticalScroll)
         if msg.type == "CONNECT":
+            if msg.username == self.client.username:
+                return
             notif = Label(f"{msg.username} joined", classes="notification")
             messages.mount(notif)
             notif.scroll_visible()
