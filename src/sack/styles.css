@@ -101,13 +101,23 @@ TextInput {
     padding: 1;
     margin-bottom: 1;
     background: $boost;
-    border-right: solid $background-darken-1; 
-    border-left: solid $background-darken-1; 
 }
 
 .right {
     align: right middle;
+    
+    .msg {
+        border-left: solid $background-darken-1; 
+        border-right: solid $secondary;
+    }
 }
+
+.left {
+    .msg {
+        border-right: solid $background-darken-1; 
+    }
+}
+
 
 .msg-text {
     text-overflow: fold;

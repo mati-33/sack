@@ -126,11 +126,17 @@ class ChatScreen(Screen):
             notif.scroll_visible()
         if msg.type == "TEXT":
             assert msg.text
+            if msg.username == self.username:
+                orientation = "right"
+                color = None
+            else:
+                orientation = "left"
+                color = self.colors_manager.get(msg.username)
             new_msg = ChatMessage(
-                orientation="right" if msg.username == self.username else "left",
+                orientation=orientation,
                 msg=msg.text,
                 author=msg.username,
-                color=self.colors_manager.get(msg.username),
+                color=color,
             )
             messages.mount(new_msg)
             new_msg.scroll_visible()

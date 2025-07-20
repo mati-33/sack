@@ -40,7 +40,7 @@ class ChatMessage(Widget):
         orientation: Literal["left", "right"],
         msg: str,
         author: str,
-        color: Color,
+        color: Color | None = None,
     ):
         super().__init__()
         self.orientation = orientation
@@ -61,6 +61,9 @@ class ChatMessage(Widget):
         yield self.container
 
     def on_mount(self) -> None:
-        setattr(
-            self.container.styles, f"border_{self.orientation}", ("solid", self.color)
-        )
+        if self.color:
+            setattr(
+                self.container.styles,
+                f"border_{self.orientation}",
+                ("solid", self.color),
+            )
