@@ -23,7 +23,8 @@ TextInput {
     max-height: 8;
     margin-bottom: 1;
     padding: 1;
-    border-right: outer $secondary;
+    border-right: solid $secondary;
+    border-left: solid $background-darken-1;
 
     .text-area--cursor-line {
         background: $surface;
@@ -81,7 +82,7 @@ TextInput {
 }
 
 #chat-header {
-    border-right: outer $secondary;
+    border-right: solid $secondary;
     width: 100%;
     margin-top: 1;
     margin-bottom: 1;
@@ -100,6 +101,8 @@ TextInput {
     padding: 1;
     margin-bottom: 1;
     background: $boost;
+    border-right: solid $background-darken-1; 
+    border-left: solid $background-darken-1; 
 }
 
 .right {

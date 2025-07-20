@@ -62,5 +62,5 @@ class ChatMessage(Widget):
 
     def on_mount(self) -> None:
         setattr(
-            self.container.styles, f"border_{self.orientation}", ("outer", self.color)
+            self.container.styles, f"border_{self.orientation}", ("solid", self.color)
         )
