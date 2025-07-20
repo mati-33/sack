@@ -5,10 +5,11 @@ from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.color import Color
-from textual.containers import Center, Container, Grid, VerticalScroll
+from textual.containers import (Center, Container, Grid, HorizontalGroup,
+                                VerticalScroll)
 from textual.message import Message
 from textual.screen import ModalScreen, Screen
-from textual.widgets import Button, Input, Label
+from textual.widgets import Button, Input, Label, Rule
 
 from sack.components import ChatMessage, TextInput
 from sack.models import SackClient, SackMessage
@@ -95,7 +96,11 @@ class ChatScreen(Screen):
                 id="chat-header",
             ),
             VerticalScroll(id="messages"),
-            TextInput(compact=True),
+            Rule(id="rule"),
+            HorizontalGroup(
+                Label("[bold]>[/]", id="prompt-char"),
+                TextInput(compact=True),
+            ),
             id="content",
         )
 

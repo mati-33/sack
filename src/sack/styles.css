@@ -22,13 +22,19 @@ TextInput {
     height: auto;
     max-height: 8;
     margin-bottom: 1;
-    padding: 1;
-    border-right: solid $secondary;
-    border-left: solid $background-darken-1;
+    background: $background;
 
     .text-area--cursor-line {
-        background: $surface;
+        background: $background;
     }
+}
+
+#prompt-char {
+    color: $secondary;
+}
+
+#rule {
+    color: $background-lighten-2;
 }
 
 #content {
