@@ -3,6 +3,7 @@ from typing import Literal
 
 from textual import events
 from textual.app import ComposeResult
+from textual.color import Color
 from textual.containers import Container, HorizontalGroup
 from textual.widget import Widget
 from textual.widgets import Label, TextArea
@@ -35,7 +36,11 @@ class TextInput(TextArea):
 
 class ChatMessage(Widget):
     def __init__(
-        self, orientation: Literal["left", "right"], msg: str, author: str, color: str
+        self,
+        orientation: Literal["left", "right"],
+        msg: str,
+        author: str,
+        color: Color,
     ):
         super().__init__()
         self.orientation = orientation
@@ -46,10 +51,16 @@ class ChatMessage(Widget):
         self.color = color
 
     def compose(self) -> ComposeResult:
-        yield Container(
+        self.container = Container(
             Label(self.msg, classes="msg-text"),
             Label(
                 f"{self.author} ({datetime.now().strftime('%H:%M')})", classes="author"
             ),
-            classes=f"msg {self.orientation}",
+            classes="msg",
+        )
+        yield self.container
+
+    def on_mount(self) -> None:
+        setattr(
+            self.container.styles, f"border_{self.orientation}", ("outer", self.color)
         )

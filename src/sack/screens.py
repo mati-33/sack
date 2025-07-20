@@ -1,6 +1,10 @@
+import random
+from random import shuffle
+
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.color import Color
 from textual.containers import Center, Container, Grid, VerticalScroll
 from textual.message import Message
 from textual.screen import ModalScreen, Screen
@@ -82,6 +86,7 @@ class ChatScreen(Screen):
         super().__init__()
         self.client = client
         self.username = client.username
+        self.colors_manager = ColorsManager()
 
     def compose(self) -> ComposeResult:
         yield Container(
@@ -125,7 +130,7 @@ class ChatScreen(Screen):
                 orientation="right" if msg.username == self.username else "left",
                 msg=msg.text,
                 author=msg.username,
-                color="",  # todo color registry
+                color=self.colors_manager.get(msg.username),
             )
             messages.mount(new_msg)
             new_msg.scroll_visible()
@@ -140,3 +145,31 @@ class ChatScreen(Screen):
             if msg is None:
                 continue
             self.post_message(self.MessageReceived(msg))
+
+
+class ColorsManager:
+    def __init__(self) -> None:
+        self._registry: dict[str, Color] = {}
+        self.color_stack = [
+            Color.parse("#1E90FF"),  # blue
+            Color.parse("#DC143C"),  # red
+            Color.parse("#FFFF00"),  # yellow
+            Color.parse("#7FFF00"),  # green
+            Color.parse("#8A2BE2"),  # violet
+            Color.parse("#FF1493"),  # pink
+        ]
+        shuffle(self.color_stack)
+
+    def get(self, username: str) -> Color:
+        if username in self._registry:
+            return self._registry[username]
+        if self.color_stack:
+            color = self.color_stack.pop()
+        else:
+            color = Color(
+                random.randint(0, 255),
+                random.randint(0, 255),
+                random.randint(0, 255),
+            )
+        self._registry[username] = color
+        return color

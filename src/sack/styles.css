@@ -102,14 +102,6 @@ TextInput {
     background: $boost;
 }
 
-.msg.right {
-    border-right: solid red;
-}
-
-.msg.left {
-    border-left: solid blue;
-}
-
 .right {
     align: right middle;
 }
