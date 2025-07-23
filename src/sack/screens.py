@@ -12,7 +12,7 @@ from textual.screen import ModalScreen, Screen
 from textual.widgets import Button, Input, Label, Rule
 
 from sack.components import ChatMessage, TextInput
-from sack.models import SackClient, SackMessage
+from sack.models import SackClient, SackMessage, SackServer
 
 
 class ServerPromptScreen(ModalScreen):
@@ -24,10 +24,33 @@ class ServerPromptScreen(ModalScreen):
         yield Grid(
             Center(Label("Set up a server")),
             Label("Port: "),
-            Input(type="integer", compact=True),
+            Input(type="integer", compact=True, id="port"),
+            Label("Username: "),
+            Input(compact=True, id="username"),
             Center(Button("Create", compact=True)),
             id="server-prompt",
         )
+
+    def on_button_pressed(self, event: Button.Pressed):
+        port = self.query_one("#port", Input).value
+        username = self.query_one("#username", Input).value
+
+        if not port:
+            self.notify("Please fill port field", severity="error")
+            return
+        if not username:
+            self.notify("Please fill username field", severity="error")
+            return
+
+        server = SackServer(host="localhost", port=int(port))
+        self.server = server
+        self.run_worker(self.run_server, thread=True, exclusive=True)
+        client = SackClient(host="localhost", port=int(port), username=username)
+        self.dismiss({"server": server, "client": client})
+
+    def run_server(self):
+        with self.server as s:
+            s.serve()
 
 
 class ClientPromptScreen(ModalScreen[SackClient]):
@@ -66,7 +89,7 @@ class ClientPromptScreen(ModalScreen[SackClient]):
         client = SackClient(host=host, port=int(port), username=username)
         try:
             client.connect()
-        except:
+        except:  # todo
             self.notify("error", severity="error")
             return
         self.dismiss(client)
@@ -83,9 +106,10 @@ class ChatScreen(Screen):
             super().__init__()
             self.msg = msg
 
-    def __init__(self, client: SackClient) -> None:
+    def __init__(self, client: SackClient, server: SackServer | None = None) -> None:
         super().__init__()
         self.client = client
+        self.server = server
         self.username = client.username
         self.colors_manager = ColorsManager()
 
@@ -113,6 +137,8 @@ class ChatScreen(Screen):
 
     def action_quit(self):
         self.client.disconnect()
+        if self.server:
+            self.server.stop()
         self.app.exit()
 
     @on(MessageReceived)
@@ -147,6 +173,8 @@ class ChatScreen(Screen):
             new_msg.scroll_visible()
 
     def on_mount(self):
+        if self.server:
+            self.client.connect()
         self.run_worker(self.update_messages, thread=True, exclusive=True)
         self.query_one(TextInput).focus()
 

@@ -35,12 +35,16 @@ class SackApp(App):
         "2": ClientPromptScreen,
     }
     BINDINGS = [
-        Binding(MenuOptionLabels.SERVER, "push_screen('1')", "Server port prompt"),
+        Binding(MenuOptionLabels.SERVER, "server", "Server port prompt"),
         Binding(MenuOptionLabels.JOIN_ROOM, "client", "Client prompt"),
         Binding(MenuOptionLabels.EXIT, "exit", "Quit the app"),
     ]
 
-    def action_server(self): ...
+    def action_server(self):
+        def push_chat_screen(x):
+            self.push_screen(ChatScreen(**x))
+
+        self.push_screen(ServerPromptScreen(), push_chat_screen)
 
     def action_client(self):
         def push_chat_screen(client: SackClient | None):

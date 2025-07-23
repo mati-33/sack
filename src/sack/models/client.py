@@ -11,7 +11,7 @@ class SackClient:
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def connect(self) -> None:
-        self._socket.connect((self.host, self.port))  # ConnectionRefused
+        self._socket.connect((self.host, self.port))  # ConnectionRefused, OSError106
         msg = SackMessage("CONNECT", self.username)
         self._socket.sendall(msg.to_bytes())
         ok_no = self._socket.recv(2).decode()
