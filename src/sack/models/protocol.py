@@ -1,5 +1,7 @@
 import socket
-from typing import Callable, Literal, overload
+
+from typing import Literal, overload
+from collections.abc import Callable
 
 
 class SackMessage:

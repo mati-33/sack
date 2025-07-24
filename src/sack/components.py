@@ -1,12 +1,12 @@
-from datetime import datetime
 from typing import Literal
+from datetime import datetime
 
 from textual import events
 from textual.app import ComposeResult
 from textual.color import Color
-from textual.containers import Container, HorizontalGroup
 from textual.widget import Widget
 from textual.widgets import Label, TextArea
+from textual.containers import Container, HorizontalGroup
 
 
 class MenuOption(HorizontalGroup):

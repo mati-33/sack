@@ -1,18 +1,18 @@
 import random
+
 from random import shuffle
 
 from textual import on
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.color import Color
-from textual.containers import (Center, Container, Grid, HorizontalGroup,
-                                VerticalScroll)
+from textual.screen import Screen, ModalScreen
+from textual.binding import Binding
 from textual.message import Message
-from textual.screen import ModalScreen, Screen
-from textual.widgets import Button, Input, Label, Rule
+from textual.widgets import Rule, Input, Label, Button
+from textual.containers import Grid, Center, Container, VerticalScroll, HorizontalGroup
 
-from sack.components import ChatMessage, TextInput
-from sack.models import SackClient, SackMessage, SackServer
+from sack.models import SackClient, SackServer, SackMessage
+from sack.components import TextInput, ChatMessage
 
 
 class ServerPromptScreen(ModalScreen):

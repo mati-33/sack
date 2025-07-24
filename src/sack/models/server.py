@@ -1,13 +1,16 @@
-import logging
 import os
 import queue
-import selectors
 import socket
+import logging
+import selectors
 import threading
+
+from typing import cast
 from dataclasses import dataclass
-from typing import Callable, cast
+from collections.abc import Callable
 
 from sack.models.protocol import SackMessage, receive_message
+
 
 log = logging.getLogger("server")
 blog = logging.getLogger("broadcaster")

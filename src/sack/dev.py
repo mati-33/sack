@@ -1,9 +1,10 @@
-import logging
 import signal
-import socket
+import logging
 import threading
+
+from typing import Protocol
 from argparse import ArgumentParser
-from typing import Protocol, Sequence
+from collections.abc import Sequence
 
 from sack.models import SackClient, SackServer
 

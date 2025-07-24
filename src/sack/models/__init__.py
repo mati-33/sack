@@ -1,5 +1,6 @@
 from .client import SackClient
-from .protocol import SackMessage
 from .server import SackServer
+from .protocol import SackMessage
+
 
 __all__ = ["SackClient", "SackServer", "SackMessage"]

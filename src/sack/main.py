@@ -2,12 +2,13 @@ from enum import StrEnum
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Container
 from textual.widgets import Static
+from textual.containers import Container
 
-from sack.components import MenuOption
 from sack.models import SackClient
 from sack.screens import ChatScreen, ClientPromptScreen, ServerPromptScreen
+from sack.components import MenuOption
+
 
 SACK_ASCII = r"""
    ▄████████    ▄████████  ▄████████    ▄█   ▄█▄ 
