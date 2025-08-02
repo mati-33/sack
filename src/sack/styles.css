@@ -1,21 +1,173 @@
+/* ===================================================================== */
+
 Screen {
     align: center top;
 }
 
-ServerPromptScreen {
-    align: center middle;
-}
+/* ===================================================================== */
 
-ClientPromptScreen {
-    align: center middle;
-}
-
-MenuOption {
-    margin-bottom: 1;
-    .shortcut {
-        dock: right;
-        border-right: outer $secondary;
+SackHeader {
+    #header {
+        text-align: center;
+        hatch: left $secondary;
+        width: 70;
+        max-width: 80%;
     }
+    Static {
+        width: 1fr;
+    }
+}
+
+#options {
+    margin-top: 5;
+
+    MenuOption {
+        width: 70;
+        max-width: 40%;
+        margin-bottom: 1;
+        .shortcut {
+            dock: right;
+            border-right: outer $secondary;
+        }
+    }
+}
+
+/* ===================================================================== */
+
+#form {
+    margin-top: 3;
+
+    & * {
+        max-width: 60;
+    }
+
+    .form-title {
+        margin-bottom: 2;
+        text-style: bold;
+    }
+
+    .form-error {
+        color: $error;
+        margin-bottom: 2;
+        margin-left: 2;
+    }
+
+    .form-field {
+        height: 2;
+        margin-bottom: 1;
+        width: 15;
+        padding-left: 1;
+        border-left: outer $background;
+
+        &:focus-within {
+            border-left: outer $secondary;
+        }
+    }
+
+    Input {
+        background: $background !important;
+
+        &:focus {
+            background-tint: $background 0%;
+        }
+        &.-textual-compact {
+            &.-invalid {
+                background-tint: $error 0%;
+            }
+        }
+    }
+
+    Select SelectOverlay {
+        background: $background !important;
+    }
+    Select SelectCurrent {
+        background: $background !important;
+    }
+
+    Button {
+        margin-top: 2;
+        background: $background;
+        text-style: none;
+
+        &:focus {
+            background: $background !important;
+            border-right: outer $secondary;
+            background-tint: $foreground 0%;
+            text-style: bold;
+        }
+    }
+}
+
+/* ===================================================================== */
+
+#chat {
+    min-width: 35%;
+    width: 75;
+    max-width: 95%;
+}
+
+#chat-header {
+    width: 100%;
+    margin-top: 1;
+    margin-bottom: 1;
+}
+
+#messages {
+    scrollbar-size-vertical: 0;
+
+    .notification {
+        height: auto;
+        color: $foreground-muted;
+        text-align: center;
+        align: center middle;
+        width: 100%;
+        margin-bottom: 1;
+    }
+
+    ChatMessage {
+        height: auto;
+
+        .msg {
+            width: auto;
+            max-width: 70w;
+            height: auto;
+            max-height: 50;
+            padding: 1;
+            margin-bottom: 1;
+            background: $boost;
+        }
+
+        .msg-text {
+            text-overflow: fold;
+            max-width: 100%;
+        }
+
+        .msg-author {
+            color: $foreground-muted;
+        }
+
+        &.left {
+            .msg {
+                border-right: solid $background-darken-1; 
+            }
+        }
+        &.right {
+            align: right middle;
+            
+            .msg {
+                border-left: solid $background-darken-1; 
+                border-right: solid $secondary;
+            }
+        }
+    }
+}
+
+#rule {
+    color: $background-lighten-2;
+}
+
+#prompt-char {
+    color: $secondary;
 }
 
 TextInput {
@@ -29,116 +181,4 @@ TextInput {
     }
 }
 
-#prompt-char {
-    color: $secondary;
-}
-
-#rule {
-    color: $background-lighten-2;
-}
-
-#content {
-    max-width: 70;
-}
-
-#header {
-    margin-top: 3;
-    text-align: center;
-    border-right: outer $secondary;
-}
-
-#options {
-    margin-top: 5;
-}
-
-#server-prompt {
-    grid-size: 2;
-    grid-rows: 2fr 1fr 1fr 2fr;
-    grid-gutter: 1;
-    width: 40;
-    height: 10;
-    background: $background-darken-1;
-    align: center middle;
-    padding: 1;
-    border-right: outer $secondary;
-
-    Center {
-        column-span: 2;
-    }
-}
-
-#client-prompt {
-    grid-size: 2;
-    grid-rows: 2fr 1fr 1fr 1fr 2fr;
-    grid-gutter: 1;
-    width: 40;
-    height: 14;
-    background: $background-darken-1;
-    align: center middle;
-    padding: 1;
-    border-right: outer $secondary;
-
-    Center {
-        column-span: 2;
-    }
-}
-
-#messages {
-    scrollbar-size-vertical: 0;
-}
-
-#chat-header {
-    border-right: solid $secondary;
-    width: 100%;
-    margin-top: 1;
-    margin-bottom: 1;
-}
-
-.msg-container {
-    height: auto;
-}
-
-.msg {
-    width: auto;
-    max-width: 70w;
-    height: auto;
-    max-height: 50;
-    padding: 1;
-    margin-bottom: 1;
-    background: $boost;
-}
-
-.right {
-    align: right middle;
-    
-    .msg {
-        border-left: solid $background-darken-1; 
-        border-right: solid $secondary;
-    }
-}
-
-.left {
-    .msg {
-        border-right: solid $background-darken-1; 
-    }
-}
-
-
-.msg-text {
-    text-overflow: fold;
-    max-width: 100%;
-}
-
-.author {
-    color: $foreground-muted;
-}
-
-.notification {
-    height: auto;
-    color: $foreground-muted;
-    text-align: center;
-    align: center middle;
-    width: 100%;
-    margin-bottom: 1;
-}
-
+/* ===================================================================== */

@@ -2,24 +2,17 @@ from enum import StrEnum
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.widgets import Static
-from textual.containers import Container
+from textual.widgets import Rule, Static
+from textual.containers import Center, Container, HorizontalGroup
 
+from sack.assets import SACK_ASCII
 from sack.models import SackClient
-from sack.screens import ChatScreen, ClientPromptScreen, ServerPromptScreen
-from sack.components import MenuOption
-
-
-SACK_ASCII = r"""
-   ▄████████    ▄████████  ▄████████    ▄█   ▄█▄ 
-  ███    ███   ███    ███ ███    ███   ███ ▄███▀ 
-  ███    █▀    ███    ███ ███    █▀    ███▐██▀   
-  ███          ███    ███ ███         ▄█████▀    
-▀███████████ ▀███████████ ███        ▀▀█████▄    
-         ███   ███    ███ ███    █▄    ███▐██▄   
-   ▄█    ███   ███    ███ ███    ███   ███ ▀███▄ 
- ▄████████▀    ███    █▀  ████████▀    ███   ▀█▀ 
-"""
+from sack.screens import (
+    ChatScreen,
+    ClientPromptScreen,
+    ServerPromptScreen,
+)
+from sack.components import MenuOption, SackHeader
 
 
 class MenuOptionLabels(StrEnum):
@@ -36,32 +29,19 @@ class SackApp(App):
         "2": ClientPromptScreen,
     }
     BINDINGS = [
-        Binding(MenuOptionLabels.SERVER, "server", "Server port prompt"),
-        Binding(MenuOptionLabels.JOIN_ROOM, "client", "Client prompt"),
+        Binding(MenuOptionLabels.SERVER, "push_screen('1')", "Server port prompt"),
+        Binding(MenuOptionLabels.JOIN_ROOM, "push_screen('2')", "Client prompt"),
         Binding(MenuOptionLabels.EXIT, "exit", "Quit the app"),
     ]
 
-    def action_server(self):
-        def push_chat_screen(x):
-            self.push_screen(ChatScreen(**x))
-
-        self.push_screen(ServerPromptScreen(), push_chat_screen)
-
-    def action_client(self):
-        def push_chat_screen(client: SackClient | None):
-            if client:
-                self.push_screen(ChatScreen(client))
-
-        self.push_screen(ClientPromptScreen(), push_chat_screen)
-
     def compose(self) -> ComposeResult:
-        with Container(id="content"):
-            yield Static(SACK_ASCII, id="header")
-            with Container(id="options"):
-                yield MenuOption("Server", "󰒋", MenuOptionLabels.SERVER)
-                yield MenuOption("Join room", "", MenuOptionLabels.JOIN_ROOM)
-                yield MenuOption("About", "", MenuOptionLabels.ABOUT)
-                yield MenuOption("Exit", "󰅖", MenuOptionLabels.EXIT)
+        # yield Static(SACK_ASCII, id="header")
+        yield SackHeader()
+        with Center(id="options"):
+            yield MenuOption("Server", "󰒋", MenuOptionLabels.SERVER)
+            yield MenuOption("Join room", "", MenuOptionLabels.JOIN_ROOM)
+            yield MenuOption("About", "", MenuOptionLabels.ABOUT)
+            yield MenuOption("Exit", "󰅖", MenuOptionLabels.EXIT)
 
     def action_exit(self):
         self.exit()
@@ -70,3 +50,7 @@ class SackApp(App):
 def main(*_):
     app = SackApp()
     app.run()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,98 +1,192 @@
 import random
-
-from random import shuffle
+import multiprocessing
 
 from textual import on
 from textual.app import ComposeResult
 from textual.color import Color
-from textual.screen import Screen, ModalScreen
+from textual.screen import Screen
 from textual.binding import Binding
 from textual.message import Message
-from textual.widgets import Rule, Input, Label, Button
-from textual.containers import Grid, Center, Container, VerticalScroll, HorizontalGroup
+from textual.widgets import Rule, Input, Label, Button, Select, Static
+from textual.containers import (
+    Right,
+    Center,
+    Container,
+    VerticalGroup,
+    VerticalScroll,
+    HorizontalGroup,
+)
 
-from sack.models import SackClient, SackServer, SackMessage
-from sack.components import TextInput, ChatMessage
+from sack.models import (
+    SackClient,
+    SackServer,
+    SackMessage,
+    SackClientServerError,
+    SackClientUsernameError,
+)
+from sack.components import TextInput, SackHeader, ChatMessage
 
 
-class ServerPromptScreen(ModalScreen):
+class ServerPromptScreen(Screen):
     BINDINGS = [
         Binding("escape", "app.pop_screen"),
     ]
 
-    def compose(self) -> ComposeResult:
-        yield Grid(
-            Center(Label("Set up a server")),
-            Label("Port: "),
-            Input(type="integer", compact=True, id="port"),
-            Label("Username: "),
-            Input(compact=True, id="username"),
-            Center(Button("Create", compact=True)),
-            id="server-prompt",
-        )
+    def __init__(self) -> None:
+        super().__init__()
+        self.server_process = None
 
-    def on_button_pressed(self, event: Button.Pressed):
+    def compose(self) -> ComposeResult:
+        yield SackHeader()
+        with Center(id="form"):
+            with Center(classes="form-title"):
+                yield Label("Set up a server")
+            yield Label(classes="form-error")
+            with VerticalGroup(classes="form-field"):
+                yield Label("Host", classes="form-label")
+                with HorizontalGroup():
+                    yield Label("> ")
+                    yield Select(
+                        [("0.0.0.0", "0.0.0.0"), ("localhost", "localhost")],
+                        value="0.0.0.0",
+                        compact=True,
+                        allow_blank=False,
+                        classes="select",
+                        id="host",
+                    )
+            with VerticalGroup(classes="form-field"):
+                yield Label("Port", classes="form-label")
+                with HorizontalGroup():
+                    yield Label("> ")
+                    yield Input(type="integer", compact=True, id="port", max_length=5)
+            with Right():
+                yield Button("Next ->", compact=True)
+
+    def on_button_pressed(self, _):
+        if self.server_process:
+            self.server_process.kill()
+            self.server_process = None
+        host = self.query_one("#host", Select).selection
         port = self.query_one("#port", Input).value
-        username = self.query_one("#username", Input).value
-
+        form_error = self.query_one(".form-error", Label)
         if not port:
-            self.notify("Please fill port field", severity="error")
+            form_error.update("Please fill Port field")
             return
-        if not username:
-            self.notify("Please fill username field", severity="error")
+        port = int(port)
+        assert isinstance(host, str)
+
+        event = multiprocessing.Event()
+
+        def server_launcher():
+            try:
+                with SackServer(host, port) as server:
+                    server.serve()
+            except Exception:
+                event.set()
+
+        server_process = multiprocessing.Process(target=server_launcher, daemon=True)
+        self.server_process = server_process
+        server_process.start()
+        if event.wait(0.1):
+            form_error.update("Could not start server, try changing port")
             return
 
-        server = SackServer(host="localhost", port=int(port))
-        self.server = server
-        self.run_worker(self.run_server, thread=True, exclusive=True)
-        client = SackClient(host="localhost", port=int(port), username=username)
-        self.dismiss({"server": server, "client": client})
-
-    def run_server(self):
-        with self.server as s:
-            s.serve()
+        client = SackClient(host=host, port=port)
+        client.connect()
+        self.app.push_screen(UsernamePromtScreen(client))
 
 
-class ClientPromptScreen(ModalScreen[SackClient]):
+class ClientPromptScreen(Screen):
     BINDINGS = [
         Binding("escape", "app.pop_screen"),
     ]
 
     def compose(self) -> ComposeResult:
-        yield Grid(
-            Center(Label("Join room")),
-            Label("Host: "),
-            Input("localhost", compact=True, id="host"),
-            Label("Port: "),
-            Input("8080", compact=True, type="integer", id="port"),
-            Label("Username: "),
-            Input(compact=True, id="username"),
-            Center(Button("Enter", compact=True)),
-            id="client-prompt",
-        )
+        yield SackHeader()
+        with Center(id="form"):
+            with Center(classes="form-title"):
+                yield Label("Join server")
+            yield Label(classes="form-error")
+            with VerticalGroup(classes="form-field"):
+                yield Label("Host", classes="form-label")
+                with HorizontalGroup():
+                    yield Label("> ")
+                    yield Input(
+                        compact=True,
+                        id="host",
+                    )
+            with VerticalGroup(classes="form-field"):
+                yield Label("Port", classes="form-label")
+                with HorizontalGroup():
+                    yield Label("> ")
+                    yield Input(type="integer", compact=True, id="port", max_length=5)
+            with Right():
+                yield Button("Next ->", compact=True)
 
-    def on_button_pressed(self, event: Button.Pressed):
+    def on_button_pressed(self, _):
         host = self.query_one("#host", Input).value
         port = self.query_one("#port", Input).value
-        username = self.query_one("#username", Input).value
-
+        form_error = self.query_one(".form-error", Label)
         if not host:
-            self.notify("Please fill host field", severity="error")
+            form_error.update("Please fill Host field")
             return
         if not port:
-            self.notify("Please fill port field", severity="error")
+            form_error.update("Please fill Port field")
             return
-        if not username:
-            self.notify("Please fill username field", severity="error")
-            return
+        port = int(port)
+        assert isinstance(host, str)
 
-        client = SackClient(host=host, port=int(port), username=username)
+        client = SackClient(
+            host=host,
+            port=port,
+        )
+
         try:
             client.connect()
-        except:  # todo
-            self.notify("error", severity="error")
+        except SackClientServerError:
+            form_error.update("Server not found")
             return
-        self.dismiss(client)
+
+        self.app.push_screen(UsernamePromtScreen(client))
+
+
+class UsernamePromtScreen(Screen):
+    BINDINGS = [
+        Binding("escape", "app.pop_screen"),
+    ]
+
+    def __init__(self, client: SackClient) -> None:
+        super().__init__()
+        self.client = client
+
+    def compose(self) -> ComposeResult:
+        yield SackHeader()
+        with Center(id="form"):
+            yield Center(Label("Set up a server"), classes="form-title")
+            yield Label(classes="form-error")
+            with VerticalGroup(classes="form-field"):
+                yield Label("Username", classes="form-label")
+                with HorizontalGroup():
+                    yield Label("> ")
+                    yield Input(compact=True, id="username", max_length=15)
+            with Right():
+                yield Button("Create", compact=True)
+
+    def on_button_pressed(self, _):
+        username = self.query_one("#username", Input).value
+        form_error = self.query_one(".form-error", Label)
+        if not username:
+            form_error.update("Please fill Username field")
+            return
+
+        self.client.username = username
+        try:
+            self.client.join_request()
+        except SackClientUsernameError:
+            form_error.update("Username already taken")
+            return
+
+        self.app.push_screen(ChatScreen(self.client))
 
 
 class ChatScreen(Screen):
@@ -106,27 +200,23 @@ class ChatScreen(Screen):
             super().__init__()
             self.msg = msg
 
-    def __init__(self, client: SackClient, server: SackServer | None = None) -> None:
+    def __init__(self, client: SackClient) -> None:
         super().__init__()
         self.client = client
-        self.server = server
         self.username = client.username
         self.colors_manager = ColorsManager()
 
     def compose(self) -> ComposeResult:
-        yield Container(
-            Label(
+        with Container(id="chat"):
+            yield Label(
                 f"[$secondary]#[/] {self.client.host}:{self.client.port}",
                 id="chat-header",
-            ),
-            VerticalScroll(id="messages"),
-            Rule(id="rule"),
-            HorizontalGroup(
-                Label("[bold]>[/]", id="prompt-char"),
-                TextInput(compact=True),
-            ),
-            id="content",
-        )
+            )
+            yield VerticalScroll(id="messages")
+            yield Rule(id="rule")
+            with HorizontalGroup():
+                yield Label("[bold]>[/]", id="prompt-char")
+                yield TextInput(compact=True)
 
     def action_send(self):
         textarea = self.query_one(TextInput)
@@ -137,8 +227,6 @@ class ChatScreen(Screen):
 
     def action_quit(self):
         self.client.disconnect()
-        if self.server:
-            self.server.stop()
         self.app.exit()
 
     @on(MessageReceived)
@@ -173,13 +261,12 @@ class ChatScreen(Screen):
             new_msg.scroll_visible()
 
     def on_mount(self):
-        if self.server:
-            self.client.connect()
         self.run_worker(self.update_messages, thread=True, exclusive=True)
         self.query_one(TextInput).focus()
 
     def update_messages(self):
         while True:
+            # try: except post_message(ServerDown)
             msg = self.client.receive_message()
             if msg is None:
                 continue
@@ -197,7 +284,7 @@ class ColorsManager:
             Color.parse("#8A2BE2"),  # violet
             Color.parse("#FF1493"),  # pink
         ]
-        shuffle(self.color_stack)
+        random.shuffle(self.color_stack)
 
     def get(self, username: str) -> Color:
         if username in self._registry:

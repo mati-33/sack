@@ -5,8 +5,17 @@ from textual import events
 from textual.app import ComposeResult
 from textual.color import Color
 from textual.widget import Widget
-from textual.widgets import Label, TextArea
+from textual.widgets import Label, Static, TextArea
 from textual.containers import Container, HorizontalGroup
+
+from sack.assets import SACK_ASCII
+
+
+class SackHeader(HorizontalGroup):
+    def compose(self) -> ComposeResult:
+        yield Static(classes="filler")
+        yield Static(SACK_ASCII, id="header")
+        yield Static(classes="filler")
 
 
 class MenuOption(HorizontalGroup):
@@ -51,19 +60,16 @@ class ChatMessage(Widget):
         self.color = color
 
     def compose(self) -> ComposeResult:
-        self.container = Container(
-            Label(self.msg, classes="msg-text"),
-            Label(
-                f"{self.author} ({datetime.now().strftime('%H:%M')})", classes="author"
-            ),
-            classes="msg",
-        )
-        yield self.container
-
-    def on_mount(self) -> None:
+        container = Container(classes="msg")
         if self.color:
             setattr(
-                self.container.styles,
+                container.styles,
                 f"border_{self.orientation}",
                 ("solid", self.color),
+            )
+        with container:
+            yield Label(self.msg, classes="msg-text")
+            yield Label(
+                f"{self.author} ({datetime.now().strftime('%H:%M')})",
+                classes="msg-author",
             )
