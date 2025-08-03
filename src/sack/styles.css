@@ -115,8 +115,9 @@ SackHeader {
 
 #chat-header {
     width: 100%;
-    margin-top: 1;
-    margin-bottom: 1;
+    height: 2;
+    border-bottom: solid $boost;
+
 }
 
 #messages {
