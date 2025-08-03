@@ -1,7 +1,7 @@
 /* ===================================================================== */
 
 Screen {
-    align: center top;
+    align: center middle;
 }
 
 /* ===================================================================== */
@@ -35,7 +35,9 @@ SackHeader {
 /* ===================================================================== */
 
 #form {
-    margin-top: 3;
+    width: 60;
+    border: solid $boost;
+    padding: 1;
 
     & * {
         max-width: 60;
@@ -44,6 +46,7 @@ SackHeader {
     .form-title {
         margin-bottom: 2;
         text-style: bold;
+        margin-left: 2;
     }
 
     .form-error {
@@ -52,15 +55,18 @@ SackHeader {
         margin-left: 2;
     }
 
+    .form-label {
+        color: $foreground-muted;
+    }
+
     .form-field {
-        height: 2;
-        margin-bottom: 1;
-        width: 15;
+        height: 4;
+        width: 30;
         padding-left: 1;
-        border-left: outer $background;
+        border: solid $boost;
 
         &:focus-within {
-            border-left: outer $secondary;
+            border: solid $secondary 50%;
         }
     }
 
@@ -88,10 +94,11 @@ SackHeader {
         margin-top: 2;
         background: $background;
         text-style: none;
+        border: solid $boost;
 
         &:focus {
             background: $background !important;
-            border-right: outer $secondary;
+            border: solid $secondary 50%;
             background-tint: $foreground 0%;
             text-style: bold;
         }
@@ -132,9 +139,8 @@ SackHeader {
             max-width: 70w;
             height: auto;
             max-height: 50;
-            padding: 1;
-            margin-bottom: 1;
-            background: $boost;
+            padding: 1 2 1 2;
+            outline: solid $boost;
         }
 
         .msg-text {
@@ -146,28 +152,22 @@ SackHeader {
             color: $foreground-muted;
         }
 
-        &.left {
-            .msg {
-                border-right: solid $background-darken-1; 
-            }
-        }
         &.right {
             align: right middle;
             
             .msg {
-                border-left: solid $background-darken-1; 
-                border-right: solid $secondary;
+                outline-right: solid $secondary;
             }
         }
     }
 }
 
-#rule {
-    color: $background-lighten-2;
-}
-
 #prompt-char {
     color: $secondary;
+}
+
+#input-wrapper {
+    border: solid $boost;
 }
 
 TextInput {

@@ -2,13 +2,9 @@ from enum import StrEnum
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.widgets import Rule, Static
-from textual.containers import Center, Container, HorizontalGroup
+from textual.containers import Center
 
-from sack.assets import SACK_ASCII
-from sack.models import SackClient
 from sack.screens import (
-    ChatScreen,
     ClientPromptScreen,
     ServerPromptScreen,
 )
@@ -34,9 +30,12 @@ class SackApp(App):
         Binding(MenuOptionLabels.EXIT, "exit", "Quit the app"),
     ]
 
+    def __init__(self):
+        super().__init__()
+        self.HEADER_BREAKPOINT = 25
+
     def compose(self) -> ComposeResult:
-        # yield Static(SACK_ASCII, id="header")
-        yield SackHeader()
+        yield from self.get_header()
         with Center(id="options"):
             yield MenuOption("Server", "󰒋", MenuOptionLabels.SERVER)
             yield MenuOption("Join room", "", MenuOptionLabels.JOIN_ROOM)
@@ -45,6 +44,16 @@ class SackApp(App):
 
     def action_exit(self):
         self.exit()
+
+    def on_resize(self, _):
+        height = self.size.height
+        header = self.query_one(SackHeader)
+        header.display = height >= self.HEADER_BREAKPOINT
+
+    def get_header(self):
+        header = SackHeader()
+        header.display = self.size.height >= self.HEADER_BREAKPOINT
+        yield header
 
 
 def main(*_):

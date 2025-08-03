@@ -64,7 +64,7 @@ class ChatMessage(Widget):
         if self.color:
             setattr(
                 container.styles,
-                f"border_{self.orientation}",
+                f"outline_{self.orientation}",
                 ("solid", self.color),
             )
         with container:

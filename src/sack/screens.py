@@ -7,7 +7,7 @@ from textual.color import Color
 from textual.screen import Screen
 from textual.binding import Binding
 from textual.message import Message
-from textual.widgets import Rule, Input, Label, Button, Select, Static
+from textual.widgets import Input, Label, Button, Select
 from textual.containers import (
     Right,
     Center,
@@ -24,28 +24,29 @@ from sack.models import (
     SackClientServerError,
     SackClientUsernameError,
 )
-from sack.components import TextInput, SackHeader, ChatMessage
+from sack.components import TextInput, ChatMessage
+
+
+COMMON_BINDINGS = [
+    Binding("escape", "app.pop_screen"),
+]
 
 
 class ServerPromptScreen(Screen):
-    BINDINGS = [
-        Binding("escape", "app.pop_screen"),
-    ]
+    BINDINGS = COMMON_BINDINGS
 
     def __init__(self) -> None:
         super().__init__()
         self.server_process = None
 
     def compose(self) -> ComposeResult:
-        yield SackHeader()
         with Center(id="form"):
             with Center(classes="form-title"):
                 yield Label("Set up a server")
             yield Label(classes="form-error")
-            with VerticalGroup(classes="form-field"):
-                yield Label("Host", classes="form-label")
-                with HorizontalGroup():
-                    yield Label("> ")
+            with Center():
+                with VerticalGroup(classes="form-field"):
+                    yield Label("Host", classes="form-label")
                     yield Select(
                         [("0.0.0.0", "0.0.0.0"), ("localhost", "localhost")],
                         value="0.0.0.0",
@@ -54,10 +55,9 @@ class ServerPromptScreen(Screen):
                         classes="select",
                         id="host",
                     )
-            with VerticalGroup(classes="form-field"):
-                yield Label("Port", classes="form-label")
-                with HorizontalGroup():
-                    yield Label("> ")
+            with Center():
+                with VerticalGroup(classes="form-field"):
+                    yield Label("Port", classes="form-label")
                     yield Input(type="integer", compact=True, id="port", max_length=5)
             with Right():
                 yield Button("Next ->", compact=True)
@@ -97,28 +97,20 @@ class ServerPromptScreen(Screen):
 
 
 class ClientPromptScreen(Screen):
-    BINDINGS = [
-        Binding("escape", "app.pop_screen"),
-    ]
+    BINDINGS = COMMON_BINDINGS
 
     def compose(self) -> ComposeResult:
-        yield SackHeader()
         with Center(id="form"):
             with Center(classes="form-title"):
                 yield Label("Join server")
             yield Label(classes="form-error")
-            with VerticalGroup(classes="form-field"):
-                yield Label("Host", classes="form-label")
-                with HorizontalGroup():
-                    yield Label("> ")
-                    yield Input(
-                        compact=True,
-                        id="host",
-                    )
-            with VerticalGroup(classes="form-field"):
-                yield Label("Port", classes="form-label")
-                with HorizontalGroup():
-                    yield Label("> ")
+            with Center():
+                with VerticalGroup(classes="form-field"):
+                    yield Label("Host", classes="form-label")
+                    yield Input(compact=True, id="host")
+            with Center():
+                with VerticalGroup(classes="form-field"):
+                    yield Label("Port", classes="form-label")
                     yield Input(type="integer", compact=True, id="port", max_length=5)
             with Right():
                 yield Button("Next ->", compact=True)
@@ -151,23 +143,19 @@ class ClientPromptScreen(Screen):
 
 
 class UsernamePromtScreen(Screen):
-    BINDINGS = [
-        Binding("escape", "app.pop_screen"),
-    ]
+    BINDINGS = COMMON_BINDINGS
 
     def __init__(self, client: SackClient) -> None:
         super().__init__()
         self.client = client
 
     def compose(self) -> ComposeResult:
-        yield SackHeader()
         with Center(id="form"):
             yield Center(Label("Set up a server"), classes="form-title")
             yield Label(classes="form-error")
-            with VerticalGroup(classes="form-field"):
-                yield Label("Username", classes="form-label")
-                with HorizontalGroup():
-                    yield Label("> ")
+            with Center():
+                with VerticalGroup(classes="form-field"):
+                    yield Label("Username", classes="form-label")
                     yield Input(compact=True, id="username", max_length=15)
             with Right():
                 yield Button("Create", compact=True)
@@ -213,8 +201,7 @@ class ChatScreen(Screen):
                 id="chat-header",
             )
             yield VerticalScroll(id="messages")
-            yield Rule(id="rule")
-            with HorizontalGroup():
+            with HorizontalGroup(id="input-wrapper"):
                 yield Label("[bold]>[/]", id="prompt-char")
                 yield TextInput(compact=True)
 
