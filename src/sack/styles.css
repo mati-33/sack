@@ -83,11 +83,16 @@ SackHeader {
         }
     }
 
-    Select SelectOverlay {
-        background: $background !important;
-    }
-    Select SelectCurrent {
-        background: $background !important;
+    Select {
+        SelectOverlay{
+            background: $background !important;
+        } 
+        SelectCurrent {
+                background: $background !important;
+        }
+        &:focus > SelectCurrent {
+            background-tint: $foreground 0%;
+        }
     }
 
     Button {
@@ -181,4 +186,62 @@ TextInput {
     }
 }
 
+/* ===================================================================== */
+
+.modal {
+    background: $background;
+    border: solid white 10%;
+    height: auto;
+    width: 40;
+    padding: 1;
+
+    .modal-title {
+        margin-bottom: 1;
+        text-style: bold;
+    }
+}
+
+.help-label{
+    width: 100%;
+    .help-keys {
+        width: 15;
+        text-align: right;
+        padding-right: 2;
+        color: $secondary;
+    }
+    .help-desc {
+        width: 1fr;
+        text-align: left;
+    }
+    &.help-header {
+        text-style: bold;
+        .help-keys {
+            color: $text;
+        }
+    }
+}
+
+ThemeOption {
+    .theme-arrow {
+        color: $background;
+        margin-left: 2;
+        margin-right: 1;
+    }
+    &:focus-within {
+        .theme-name {
+            color: $secondary;
+        }
+        .theme-arrow {
+            color: $text;
+        }
+    }
+
+    Input {
+        height: 0;
+        width: 0;
+        padding: 0;
+        margin: 0;
+        border: none;
+    }
+}
 /* ===================================================================== */

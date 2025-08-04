@@ -1,10 +1,12 @@
 import random
 import multiprocessing
 
+from typing import TYPE_CHECKING
+
 from textual import on
 from textual.app import ComposeResult
 from textual.color import Color
-from textual.screen import Screen
+from textual.screen import Screen, ModalScreen
 from textual.binding import Binding
 from textual.message import Message
 from textual.widgets import Input, Label, Button, Select
@@ -27,18 +29,29 @@ from sack.models import (
 from sack.components import TextInput, ChatMessage
 
 
+if TYPE_CHECKING:
+    from sack.main import SackApp
+
+
 COMMON_BINDINGS = [
     Binding("escape", "app.pop_screen"),
+    Binding("ctrl+n", "focus_next", "Focus Next"),
+    Binding("ctrl+p", "focus_previous", "Focus Previous"),
 ]
 
 
-class ServerPromptScreen(Screen):
+class BaseScreen(Screen):
+    app: "SackApp"  # type: ignore
     BINDINGS = COMMON_BINDINGS
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.server_process = None
+    def action_focus_next(self) -> None:
+        self.focus_next()
 
+    def action_focus_previous(self) -> None:
+        self.focus_previous()
+
+
+class ServerPromptScreen(BaseScreen):
     def compose(self) -> ComposeResult:
         with Center(id="form"):
             with Center(classes="form-title"):
@@ -63,9 +76,9 @@ class ServerPromptScreen(Screen):
                 yield Button("Next ->", compact=True)
 
     def on_button_pressed(self, _):
-        if self.server_process:
-            self.server_process.kill()
-            self.server_process = None
+        if self.app.server_process:
+            self.app.server_process.kill()
+            self.app.server_process = None
         host = self.query_one("#host", Select).selection
         port = self.query_one("#port", Input).value
         form_error = self.query_one(".form-error", Label)
@@ -85,7 +98,7 @@ class ServerPromptScreen(Screen):
                 event.set()
 
         server_process = multiprocessing.Process(target=server_launcher, daemon=True)
-        self.server_process = server_process
+        self.app.server_process = server_process
         server_process.start()
         if event.wait(0.1):
             form_error.update("Could not start server, try changing port")
@@ -96,9 +109,7 @@ class ServerPromptScreen(Screen):
         self.app.push_screen(UsernamePromtScreen(client))
 
 
-class ClientPromptScreen(Screen):
-    BINDINGS = COMMON_BINDINGS
-
+class ClientPromptScreen(BaseScreen):
     def compose(self) -> ComposeResult:
         with Center(id="form"):
             with Center(classes="form-title"):
@@ -142,9 +153,7 @@ class ClientPromptScreen(Screen):
         self.app.push_screen(UsernamePromtScreen(client))
 
 
-class UsernamePromtScreen(Screen):
-    BINDINGS = COMMON_BINDINGS
-
+class UsernamePromtScreen(BaseScreen):
     def __init__(self, client: SackClient) -> None:
         super().__init__()
         self.client = client
@@ -178,9 +187,12 @@ class UsernamePromtScreen(Screen):
 
 
 class ChatScreen(Screen):
+    app: "SackApp"  # type: ignore
+
     BINDINGS = [
         Binding("enter", "send", "Send message", priority=True),
         Binding("ctrl+c", "quit", "Quit app", priority=True),
+        Binding("ctrl+underscore", "show_help", "Show help", priority=True),
     ]
 
     class MessageReceived(Message):
@@ -219,6 +231,9 @@ class ChatScreen(Screen):
     def action_quit(self):
         self.client.disconnect()
         self.app.exit()
+
+    def action_show_help(self):
+        self.app.push_screen(ChatHelpScreen())
 
     @on(MessageReceived)
     def on_message_received(self, event: MessageReceived):
@@ -290,3 +305,69 @@ class ColorsManager:
             )
         self._registry[username] = color
         return color
+
+
+class ChatHelpScreen(ModalScreen):
+    BINDINGS = COMMON_BINDINGS
+
+    def compose(self) -> ComposeResult:
+        with Container(classes="modal"):
+            with Center():
+                yield Label("Help", classes="modal-title")
+            with HorizontalGroup(classes="help-label help-header"):
+                yield Label("KEYS", classes="help-keys")
+                yield Label("ACTION", classes="help-desc")
+            with HorizontalGroup(classes="help-label"):
+                yield Label("Enter", classes="help-keys")
+                yield Label("Send message", classes="help-desc")
+            with HorizontalGroup(classes="help-label"):
+                yield Label("ctrl+n", classes="help-keys")
+                yield Label("New line", classes="help-desc")
+            with HorizontalGroup(classes="help-label"):
+                yield Label("ctrl+c", classes="help-keys")
+                yield Label("Quit application", classes="help-desc")
+            with HorizontalGroup(classes="help-label"):
+                yield Label("ctrl+q", classes="help-keys")
+                yield Label("Back to menu", classes="help-desc")
+
+
+class ThemeOption(HorizontalGroup):
+    def __init__(self, theme: str) -> None:
+        super().__init__()
+        self.theme = theme
+
+    def compose(self) -> ComposeResult:
+        yield Label(">", classes="theme-arrow")
+        yield Label(self.theme, classes="theme-name")
+        yield Input(id=self.theme)
+
+
+class ThemeChangeScreen(ModalScreen):
+    BINDINGS = COMMON_BINDINGS + [
+        Binding("down", "focus_next", "Focus Next"),
+        Binding("up", "focus_previous", "Focus Previous"),
+        Binding("tab", "focus_next", "Focus Next"),
+        Binding("shift+tab", "focus_previous", "Focus Previous"),
+        Binding("enter", "app.pop_screen", priority=True),
+    ]
+
+    def action_focus_next(self) -> None:
+        self.focus_next()
+        self.change_theme_from_focused()
+
+    def action_focus_previous(self) -> None:
+        self.focus_previous()
+        self.change_theme_from_focused()
+
+    def change_theme_from_focused(self):
+        focused = self.focused
+        if isinstance(focused, Input) and focused.id:
+            assert focused.id in self.app.available_themes
+            self.app.theme = focused.id
+
+    def compose(self) -> ComposeResult:
+        with Container(classes="modal"):
+            with Center():
+                yield Label("Change theme", classes="modal-title")
+            for theme in self.app.available_themes:
+                yield ThemeOption(theme)
