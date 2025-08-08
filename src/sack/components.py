@@ -5,7 +5,7 @@ from textual import events
 from textual.app import ComposeResult
 from textual.color import Color
 from textual.widget import Widget
-from textual.widgets import Label, Static, TextArea
+from textual.widgets import Label, Button, Static, TextArea
 from textual.containers import Container, HorizontalGroup
 
 from sack.assets import SACK_ASCII
@@ -73,3 +73,15 @@ class ChatMessage(Widget):
                 f"{self.author} ({datetime.now().strftime('%H:%M')})",
                 classes="msg-author",
             )
+
+
+class ModalOption(HorizontalGroup):
+    def __init__(self, label: str, option_key: str) -> None:
+        super().__init__()
+        self.label = label
+        self.option_key = option_key
+
+    def compose(self) -> ComposeResult:
+        yield Label(">", classes="option-arrow")
+        yield Label(self.label, classes="option-label")
+        yield Button(id=self.option_key)

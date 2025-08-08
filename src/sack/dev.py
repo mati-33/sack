@@ -74,6 +74,7 @@ class ClientControllerArgs(Protocol):
 def client_controller(args: ClientControllerArgs) -> None:
     client = SackClient(host=args.host, port=args.port, username=args.username)
     client.connect()
+    client.join_request()
 
     def listen():
         while True:

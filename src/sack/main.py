@@ -2,9 +2,11 @@ from enum import StrEnum
 from multiprocessing import Process
 
 from textual.app import App, ComposeResult
+from textual.worker import Worker
 from textual.binding import Binding
 from textual.containers import Center
 
+from sack.models import AsyncSackClient
 from sack.screens import (
     ThemeChangeScreen,
     ClientPromptScreen,
@@ -39,6 +41,8 @@ class SackApp(App):
         super().__init__()
         self.HEADER_BREAKPOINT = 25
         self.server_process: Process | None = None
+        self.client: AsyncSackClient | None = None
+        self.message_worker: Worker | None = None
 
     def compose(self) -> ComposeResult:
         yield from self.get_header()
@@ -60,6 +64,21 @@ class SackApp(App):
         header = SackHeader()
         header.display = self.size.height >= self.HEADER_BREAKPOINT
         yield header
+
+    async def cleanup(self):
+        if self.message_worker:
+            self.message_worker.cancel()
+            self.message_worker = None
+        if self.client:
+            await self.client.disconnect()
+            self.client = None
+        if self.server_process:
+            self.server_process.kill()
+            self.server_process = None
+
+    def back_to_first_screen(self):
+        for _ in range(len(self.screen_stack) - 1):
+            self.pop_screen()
 
 
 def main(*_):

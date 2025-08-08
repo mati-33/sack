@@ -19,14 +19,15 @@ from textual.containers import (
     HorizontalGroup,
 )
 
+from sack.util import ColorsManager
 from sack.models import (
-    SackClient,
     SackServer,
     SackMessage,
+    AsyncSackClient,
     SackClientServerError,
     SackClientUsernameError,
 )
-from sack.components import TextInput, ChatMessage
+from sack.components import TextInput, ChatMessage, ModalOption
 
 
 if TYPE_CHECKING:
@@ -35,8 +36,19 @@ if TYPE_CHECKING:
 
 COMMON_BINDINGS = [
     Binding("escape", "app.pop_screen"),
-    Binding("ctrl+n", "focus_next", "Focus Next"),
-    Binding("ctrl+p", "focus_previous", "Focus Previous"),
+    Binding("ctrl+j", "focus_next", "Focus Next", priority=True),
+    Binding("ctrl+k", "focus_previous", "Focus Previous", priority=True),
+    Binding("ctrl+n", "focus_next", "Focus Next", priority=True),
+    Binding("ctrl+p", "focus_previous", "Focus Previous", priority=True),
+]
+
+MODAL_BINDINGS = [
+    Binding("down", "focus_next", "Focus Next"),
+    Binding("up", "focus_previous", "Focus Previous"),
+    Binding("tab", "focus_next", "Focus Next"),
+    Binding("shift+tab", "focus_previous", "Focus Previous"),
+    Binding("j", "focus_next", "Focus Next"),
+    Binding("k", "focus_previous", "Focus Previous"),
 ]
 
 
@@ -75,10 +87,8 @@ class ServerPromptScreen(BaseScreen):
             with Right():
                 yield Button("Next ->", compact=True)
 
-    def on_button_pressed(self, _):
-        if self.app.server_process:
-            self.app.server_process.kill()
-            self.app.server_process = None
+    async def on_button_pressed(self, _):
+        await self.app.cleanup()
         host = self.query_one("#host", Select).selection
         port = self.query_one("#port", Input).value
         form_error = self.query_one(".form-error", Label)
@@ -104,9 +114,10 @@ class ServerPromptScreen(BaseScreen):
             form_error.update("Could not start server, try changing port")
             return
 
-        client = SackClient(host=host, port=port)
-        client.connect()
-        self.app.push_screen(UsernamePromtScreen(client))
+        client = AsyncSackClient(host=host, port=port)
+        await client.connect()
+        self.app.client = client
+        self.app.push_screen(UsernamePromtScreen())
 
 
 class ClientPromptScreen(BaseScreen):
@@ -126,7 +137,8 @@ class ClientPromptScreen(BaseScreen):
             with Right():
                 yield Button("Next ->", compact=True)
 
-    def on_button_pressed(self, _):
+    async def on_button_pressed(self, _):
+        await self.app.cleanup()
         host = self.query_one("#host", Input).value
         port = self.query_one("#port", Input).value
         form_error = self.query_one(".form-error", Label)
@@ -139,25 +151,22 @@ class ClientPromptScreen(BaseScreen):
         port = int(port)
         assert isinstance(host, str)
 
-        client = SackClient(
+        client = AsyncSackClient(
             host=host,
             port=port,
         )
 
         try:
-            client.connect()
+            await client.connect()
         except SackClientServerError:
             form_error.update("Server not found")
             return
 
-        self.app.push_screen(UsernamePromtScreen(client))
+        self.app.client = client
+        self.app.push_screen(UsernamePromtScreen())
 
 
 class UsernamePromtScreen(BaseScreen):
-    def __init__(self, client: SackClient) -> None:
-        super().__init__()
-        self.client = client
-
     def compose(self) -> ComposeResult:
         with Center(id="form"):
             yield Center(Label("Set up a server"), classes="form-title")
@@ -169,21 +178,23 @@ class UsernamePromtScreen(BaseScreen):
             with Right():
                 yield Button("Create", compact=True)
 
-    def on_button_pressed(self, _):
+    async def on_button_pressed(self, _):
         username = self.query_one("#username", Input).value
         form_error = self.query_one(".form-error", Label)
         if not username:
             form_error.update("Please fill Username field")
             return
 
-        self.client.username = username
+        client = self.app.client
+        assert client
+        client.username = username
         try:
-            self.client.join_request()
+            await client.join_request()
         except SackClientUsernameError:
             form_error.update("Username already taken")
             return
 
-        self.app.push_screen(ChatScreen(self.client))
+        self.app.push_screen(ChatScreen())
 
 
 class ChatScreen(Screen):
@@ -193,6 +204,8 @@ class ChatScreen(Screen):
         Binding("enter", "send", "Send message", priority=True),
         Binding("ctrl+c", "quit", "Quit app", priority=True),
         Binding("ctrl+underscore", "show_help", "Show help", priority=True),
+        Binding("ctrl+b", "to_menu", "Back to menu", priority=True),
+        Binding("escape", "open_menu", "Open menu"),
     ]
 
     class MessageReceived(Message):
@@ -200,10 +213,14 @@ class ChatScreen(Screen):
             super().__init__()
             self.msg = msg
 
-    def __init__(self, client: SackClient) -> None:
+    class ServerDown(Message):
+        pass
+
+    def __init__(self) -> None:
         super().__init__()
-        self.client = client
-        self.username = client.username
+        assert self.app.client
+        self.client = self.app.client
+        self.username = self.app.client.username
         self.colors_manager = ColorsManager()
 
     def compose(self) -> ComposeResult:
@@ -221,19 +238,46 @@ class ChatScreen(Screen):
                 yield Label("[bold]>[/]", id="prompt-char")
                 yield TextInput(compact=True)
 
-    def action_send(self):
+    async def action_send(self):
         textarea = self.query_one(TextInput)
         if not textarea.text:
             return
-        self.client.send_text(textarea.text)
+        await self.client.send_text(textarea.text)
         textarea.clear()
 
-    def action_quit(self):
-        self.client.disconnect()
+    async def action_quit(self):
+        await self.app.cleanup()
         self.app.exit()
 
     def action_show_help(self):
         self.app.push_screen(ChatHelpScreen())
+
+    async def action_to_menu(self):
+        await self.app.cleanup()
+        self.app.back_to_first_screen()
+
+    def action_open_menu(self):
+        self.app.push_screen(MenuScreen())
+
+    def on_mount(self):
+        self.app.message_worker = self.run_worker(self.update_messages)
+        self.query_one(TextInput).focus()
+
+    async def update_messages(self):
+        while True:
+            try:
+                msg = await self.client.receive_message()
+            except SackClientServerError:
+                self.post_message(self.ServerDown())
+                break
+            if msg is None:
+                continue
+            self.post_message(self.MessageReceived(msg))
+
+    @on(ServerDown)
+    async def on_server_down(self):
+        await self.app.cleanup()
+        self.app.exit()
 
     @on(MessageReceived)
     def on_message_received(self, event: MessageReceived):
@@ -266,46 +310,6 @@ class ChatScreen(Screen):
             messages.mount(new_msg)
             new_msg.scroll_visible()
 
-    def on_mount(self):
-        self.run_worker(self.update_messages, thread=True, exclusive=True)
-        self.query_one(TextInput).focus()
-
-    def update_messages(self):
-        while True:
-            # try: except post_message(ServerDown)
-            msg = self.client.receive_message()
-            if msg is None:
-                continue
-            self.post_message(self.MessageReceived(msg))
-
-
-class ColorsManager:
-    def __init__(self) -> None:
-        self._registry: dict[str, Color] = {}
-        self.color_stack = [
-            Color.parse("#1E90FF"),  # blue
-            Color.parse("#DC143C"),  # red
-            Color.parse("#FFFF00"),  # yellow
-            Color.parse("#7FFF00"),  # green
-            Color.parse("#8A2BE2"),  # violet
-            Color.parse("#FF1493"),  # pink
-        ]
-        random.shuffle(self.color_stack)
-
-    def get(self, username: str) -> Color:
-        if username in self._registry:
-            return self._registry[username]
-        if self.color_stack:
-            color = self.color_stack.pop()
-        else:
-            color = Color(
-                random.randint(0, 255),
-                random.randint(0, 255),
-                random.randint(0, 255),
-            )
-        self._registry[username] = color
-        return color
-
 
 class ChatHelpScreen(ModalScreen):
     BINDINGS = COMMON_BINDINGS
@@ -331,23 +335,10 @@ class ChatHelpScreen(ModalScreen):
                 yield Label("Back to menu", classes="help-desc")
 
 
-class ThemeOption(HorizontalGroup):
-    def __init__(self, theme: str) -> None:
-        super().__init__()
-        self.theme = theme
-
-    def compose(self) -> ComposeResult:
-        yield Label(">", classes="theme-arrow")
-        yield Label(self.theme, classes="theme-name")
-        yield Input(id=self.theme)
-
-
 class ThemeChangeScreen(ModalScreen):
-    BINDINGS = COMMON_BINDINGS + [
-        Binding("down", "focus_next", "Focus Next"),
-        Binding("up", "focus_previous", "Focus Previous"),
-        Binding("tab", "focus_next", "Focus Next"),
-        Binding("shift+tab", "focus_previous", "Focus Previous"),
+    BINDINGS = [
+        *COMMON_BINDINGS,
+        *MODAL_BINDINGS,
         Binding("enter", "app.pop_screen", priority=True),
     ]
 
@@ -361,7 +352,7 @@ class ThemeChangeScreen(ModalScreen):
 
     def change_theme_from_focused(self):
         focused = self.focused
-        if isinstance(focused, Input) and focused.id:
+        if isinstance(focused, Button) and focused.id:
             assert focused.id in self.app.available_themes
             self.app.theme = focused.id
 
@@ -370,4 +361,37 @@ class ThemeChangeScreen(ModalScreen):
             with Center():
                 yield Label("Change theme", classes="modal-title")
             for theme in self.app.available_themes:
-                yield ThemeOption(theme)
+                yield ModalOption(theme, theme)
+
+
+class MenuScreen(ModalScreen):
+    app: "SackApp"  # type: ignore
+
+    BINDINGS = COMMON_BINDINGS + MODAL_BINDINGS
+
+    def action_focus_next(self) -> None:
+        self.focus_next()
+
+    def action_focus_previous(self) -> None:
+        self.focus_previous()
+
+    def compose(self) -> ComposeResult:
+        with Container(classes="modal"):
+            with Center():
+                yield Label("Menu", classes="modal-title")
+            yield ModalOption("Exit app", "exit")
+            yield ModalOption("Exit to menu", "exit_to_menu")
+            yield ModalOption("Help", "help")
+
+    async def on_button_pressed(self, e: Button.Pressed):
+        action_id = e.button.id
+        assert action_id
+        if action_id == "exit":
+            await self.app.cleanup()
+            self.app.exit()
+        elif action_id == "exit_to_menu":
+            await self.app.cleanup()
+            self.app.back_to_first_screen()
+        elif action_id == "help":
+            self.app.pop_screen()
+            self.app.push_screen(ChatHelpScreen())

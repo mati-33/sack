@@ -88,7 +88,6 @@ class SackServer:
                         username = message.username
                         if username in self._get_usernames():
                             key.fileobj.sendall(b"NO")
-                            self._unregister(key.fileobj)
                             continue
                         else:
                             key.fileobj.sendall(b"OK")

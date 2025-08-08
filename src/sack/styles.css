@@ -220,22 +220,22 @@ TextInput {
     }
 }
 
-ThemeOption {
-    .theme-arrow {
+ModalOption {
+    .option-arrow {
         margin-left: 2;
         margin-right: 1;
         text-opacity: 0%;
     }
     &:focus-within {
-        .theme-name {
+        .option-label {
             color: $secondary;
         }
-        .theme-arrow {
+        .option-arrow {
             text-opacity: 100%;
         }
     }
 
-    Input {
+    Button {
         height: 0;
         width: 0;
         padding: 0;
