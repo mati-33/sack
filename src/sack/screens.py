@@ -277,7 +277,8 @@ class ChatScreen(Screen):
     @on(ServerDown)
     async def on_server_down(self):
         await self.app.cleanup()
-        self.app.exit()
+        self.app.back_to_first_screen()
+        self.app.push_screen(ServerDownScreen())
 
     @on(MessageReceived)
     def on_message_received(self, event: MessageReceived):
@@ -395,3 +396,15 @@ class MenuScreen(ModalScreen):
         elif action_id == "help":
             self.app.pop_screen()
             self.app.push_screen(ChatHelpScreen())
+
+
+class ServerDownScreen(ModalScreen):
+    BINDINGS = [
+        Binding("enter", "app.pop_screen", priority=True),
+        Binding("escape", "app.pop_screen", priority=True),
+    ]
+
+    def compose(self) -> ComposeResult:
+        with Container(classes="modal"):
+            with Center():
+                yield Label("Connection to the server was lost", classes="modal-title")
