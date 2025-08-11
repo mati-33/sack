@@ -33,7 +33,7 @@ class MenuOption(HorizontalGroup):
 
 class TextInput(TextArea):
     def _on_key(self, event: events.Key) -> None:
-        new_line = "ctrl+n"
+        new_line = "shift+enter"
         if event.key != new_line:
             return
 
