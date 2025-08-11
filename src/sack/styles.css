@@ -9,7 +9,7 @@ Screen {
 SackHeader {
     #header {
         text-align: center;
-        hatch: left $secondary;
+        hatch: left $primary;
         width: 70;
         max-width: 80%;
     }
@@ -27,7 +27,7 @@ SackHeader {
         margin-bottom: 1;
         .shortcut {
             dock: right;
-            border-right: outer $secondary;
+            border-right: outer $primary;
         }
     }
 }
@@ -66,7 +66,7 @@ SackHeader {
         border: solid $surface-lighten-1;
 
         &:focus-within {
-            border: solid $secondary 50%;
+            border: solid $primary 50%;
         }
     }
 
@@ -103,7 +103,7 @@ SackHeader {
 
         &:focus {
             background: $background !important;
-            border: solid $secondary 50%;
+            border: solid $primary 50%;
             background-tint: $foreground 0%;
             text-style: bold;
         }
@@ -161,18 +161,24 @@ SackHeader {
             align: right middle;
             
             .msg {
-                outline-right: solid $secondary;
+                outline-right: solid $primary;
             }
         }
     }
 }
 
-#prompt-char {
-    color: $secondary;
-}
-
 #input-wrapper {
     border: solid $surface-lighten-1;
+
+    #prompt-char {
+        color: $text;
+    }
+
+    &:focus-within {
+        #prompt-char {
+            color: $primary;
+        }
+    }
 }
 
 TextInput {
@@ -206,7 +212,7 @@ TextInput {
         width: 15;
         text-align: right;
         padding-right: 2;
-        color: $secondary;
+        color: $primary;
     }
     .help-desc {
         width: 1fr;
@@ -228,7 +234,7 @@ ModalOption {
     }
     &:focus-within {
         .option-label {
-            color: $secondary;
+            color: $primary;
         }
         .option-arrow {
             text-opacity: 100%;
