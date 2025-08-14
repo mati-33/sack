@@ -1,11 +1,9 @@
-import random
 import multiprocessing
 
 from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.color import Color
 from textual.screen import Screen, ModalScreen
 from textual.binding import Binding
 from textual.message import Message
@@ -36,34 +34,16 @@ if TYPE_CHECKING:
 
 COMMON_BINDINGS = [
     Binding("escape", "app.pop_screen"),
-    Binding("ctrl+j", "focus_next", "Focus Next", priority=True),
-    Binding("ctrl+k", "focus_previous", "Focus Previous", priority=True),
-    Binding("ctrl+n", "focus_next", "Focus Next", priority=True),
-    Binding("ctrl+p", "focus_previous", "Focus Previous", priority=True),
-]
-
-MODAL_BINDINGS = [
-    Binding("down", "focus_next", "Focus Next"),
-    Binding("up", "focus_previous", "Focus Previous"),
-    Binding("tab", "focus_next", "Focus Next"),
-    Binding("shift+tab", "focus_previous", "Focus Previous"),
-    Binding("j", "focus_next", "Focus Next"),
-    Binding("k", "focus_previous", "Focus Previous"),
+    Binding("tab, ctrl+j", "app.focus_next", priority=True),
+    Binding("shift+tab, ctrl+k", "app.focus_previous", priority=True),
 ]
 
 
-class BaseScreen(Screen):
-    app: "SackApp"  # type: ignore
+class ServerPromptScreen(Screen):
+    app: "SackApp"
+
     BINDINGS = COMMON_BINDINGS
 
-    def action_focus_next(self) -> None:
-        self.focus_next()
-
-    def action_focus_previous(self) -> None:
-        self.focus_previous()
-
-
-class ServerPromptScreen(BaseScreen):
     def compose(self) -> ComposeResult:
         with Center(id="form"):
             with Center(classes="form-title"):
@@ -120,7 +100,11 @@ class ServerPromptScreen(BaseScreen):
         self.app.push_screen(UsernamePromtScreen())
 
 
-class ClientPromptScreen(BaseScreen):
+class ClientPromptScreen(Screen):
+    app: "SackApp"
+
+    BINDINGS = COMMON_BINDINGS
+
     def compose(self) -> ComposeResult:
         with Center(id="form"):
             with Center(classes="form-title"):
@@ -166,7 +150,11 @@ class ClientPromptScreen(BaseScreen):
         self.app.push_screen(UsernamePromtScreen())
 
 
-class UsernamePromtScreen(BaseScreen):
+class UsernamePromtScreen(Screen):
+    app: "SackApp"
+
+    BINDINGS = COMMON_BINDINGS
+
     def compose(self) -> ComposeResult:
         with Center(id="form"):
             yield Center(Label("Set up a server"), classes="form-title")
@@ -198,14 +186,16 @@ class UsernamePromtScreen(BaseScreen):
 
 
 class ChatScreen(Screen):
-    app: "SackApp"  # type: ignore
+    app: "SackApp"
 
     BINDINGS = [
-        Binding("enter", "send", "Send message", priority=True),
-        Binding("ctrl+c", "quit", "Quit app", priority=True),
-        Binding("ctrl+underscore", "show_help", "Show help", priority=True),
-        Binding("ctrl+b", "to_menu", "Back to menu", priority=True),
-        Binding("escape", "open_menu", "Open menu"),
+        Binding("enter", "send", priority=True),
+        Binding("ctrl+c", "quit", priority=True),
+        Binding("ctrl+underscore", "show_help", priority=True),
+        Binding("ctrl+b", "to_menu", priority=True),
+        Binding("escape", "open_menu"),
+        Binding("ctrl+j", "app.focus_next", priority=True),
+        Binding("ctrl+k", "app.focus_previous", priority=True),
     ]
 
     class MessageReceived(Message):
@@ -319,28 +309,14 @@ class ChatHelpScreen(ModalScreen):
         with Container(classes="modal"):
             with Center():
                 yield Label("Help", classes="modal-title")
-            with HorizontalGroup(classes="help-label help-header"):
-                yield Label("KEYS", classes="help-keys")
-                yield Label("ACTION", classes="help-desc")
-            with HorizontalGroup(classes="help-label"):
-                yield Label("Enter", classes="help-keys")
-                yield Label("Send message", classes="help-desc")
-            with HorizontalGroup(classes="help-label"):
-                yield Label("ctrl+n", classes="help-keys")
-                yield Label("New line", classes="help-desc")
-            with HorizontalGroup(classes="help-label"):
-                yield Label("ctrl+c", classes="help-keys")
-                yield Label("Quit application", classes="help-desc")
-            with HorizontalGroup(classes="help-label"):
-                yield Label("ctrl+q", classes="help-keys")
-                yield Label("Back to menu", classes="help-desc")
 
 
 class ThemeChangeScreen(ModalScreen):
     BINDINGS = [
-        *COMMON_BINDINGS,
-        *MODAL_BINDINGS,
+        Binding("escape", "app.pop_screen"),
         Binding("enter", "app.pop_screen", priority=True),
+        Binding("down, tab, j", "focus_next", priority=True),
+        Binding("up, shift+tab, k", "focus_previous", priority=True),
     ]
 
     def action_focus_next(self) -> None:
@@ -366,15 +342,12 @@ class ThemeChangeScreen(ModalScreen):
 
 
 class MenuScreen(ModalScreen):
-    app: "SackApp"  # type: ignore
+    app: "SackApp"
 
-    BINDINGS = COMMON_BINDINGS + MODAL_BINDINGS
-
-    def action_focus_next(self) -> None:
-        self.focus_next()
-
-    def action_focus_previous(self) -> None:
-        self.focus_previous()
+    BINDINGS = COMMON_BINDINGS + [
+        Binding("down, tab, j", "app.focus_next"),
+        Binding("up, shift+tab, k", "app.focus_previous"),
+    ]
 
     def compose(self) -> ComposeResult:
         with Container(classes="modal"):
@@ -399,10 +372,7 @@ class MenuScreen(ModalScreen):
 
 
 class ServerDownScreen(ModalScreen):
-    BINDINGS = [
-        Binding("enter", "app.pop_screen", priority=True),
-        Binding("escape", "app.pop_screen", priority=True),
-    ]
+    BINDINGS = [Binding("enter, escape", "app.pop_screen", priority=True)]
 
     def compose(self) -> ComposeResult:
         with Container(classes="modal"):
