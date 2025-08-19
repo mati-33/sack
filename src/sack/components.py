@@ -7,7 +7,7 @@ from textual.color import Color
 from textual.widget import Widget
 from textual.binding import Binding
 from textual.widgets import Label, Button, Static, TextArea
-from textual.containers import Container, VerticalScroll, HorizontalGroup
+from textual.containers import Center, Container, VerticalScroll, HorizontalGroup
 
 from sack.assets import SACK_ASCII
 
@@ -97,3 +97,20 @@ class VimVerticalScroll(VerticalScroll):
         Binding("u", "page_up", "Page Up", show=False),
         Binding("d", "page_down", "Page Down", show=False),
     ]
+
+
+class FormError(Center):
+    def compose(self) -> ComposeResult:
+        label = Label(classes="form-error")
+        label.display = False
+        yield label
+
+    def reset(self) -> None:
+        label = self.query_one(".form-error", Label)
+        label.update("")
+        label.display = False
+
+    def update(self, message: str) -> None:
+        label = self.query_one(".form-error", Label)
+        label.update(message)
+        label.display = True

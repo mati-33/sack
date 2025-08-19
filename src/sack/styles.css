@@ -35,7 +35,7 @@ SackHeader {
 /* ===================================================================== */
 
 #form {
-    width: 60;
+    width: 45;
     border: solid $surface-lighten-1;
     padding: 1;
 
@@ -44,15 +44,17 @@ SackHeader {
     }
 
     .form-title {
-        margin-bottom: 2;
+        margin-bottom: 1;
         text-style: bold;
         margin-left: 2;
     }
 
     .form-error {
         color: $error;
-        margin-bottom: 2;
-        margin-left: 2;
+        margin-bottom: 1;
+        text-align: center;
+        width: 30;
+        background: red 10%;
     }
 
     .form-label {
@@ -96,7 +98,7 @@ SackHeader {
     }
 
     Button {
-        margin-top: 2;
+        margin-top: 1;
         background: $background;
         text-style: none;
         border: solid $surface-lighten-1;

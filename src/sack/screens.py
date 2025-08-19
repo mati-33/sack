@@ -24,7 +24,13 @@ from sack.models import (
     SackClientServerError,
     SackClientUsernameError,
 )
-from sack.components import TextInput, ChatMessage, ModalOption, VimVerticalScroll
+from sack.components import (
+    FormError,
+    TextInput,
+    ChatMessage,
+    ModalOption,
+    VimVerticalScroll,
+)
 
 
 if TYPE_CHECKING:
@@ -47,7 +53,7 @@ class ServerPromptScreen(Screen):
         with Center(id="form"):
             with Center(classes="form-title"):
                 yield Label("Set up a server")
-            yield Label(classes="form-error")
+            yield FormError()
             with Center():
                 with VerticalGroup(classes="form-field"):
                     yield Label("Host", classes="form-label")
@@ -70,7 +76,7 @@ class ServerPromptScreen(Screen):
         await self.app.cleanup()
         host = self.query_one("#host", Select).selection
         port = self.query_one("#port", Input).value
-        form_error = self.query_one(".form-error", Label)
+        form_error = self.query_one(FormError)
         if not port:
             form_error.update("Please fill Port field")
             return
@@ -108,7 +114,7 @@ class ClientPromptScreen(Screen):
         with Center(id="form"):
             with Center(classes="form-title"):
                 yield Label("Join server")
-            yield Label(classes="form-error")
+            yield FormError()
             with Center():
                 with VerticalGroup(classes="form-field"):
                     yield Label("Host", classes="form-label")
@@ -124,7 +130,7 @@ class ClientPromptScreen(Screen):
         await self.app.cleanup()
         host = self.query_one("#host", Input).value
         port = self.query_one("#port", Input).value
-        form_error = self.query_one(".form-error", Label)
+        form_error = self.query_one(FormError)
         if not host:
             form_error.update("Please fill Host field")
             return
@@ -157,7 +163,7 @@ class UsernamePromtScreen(Screen):
     def compose(self) -> ComposeResult:
         with Center(id="form"):
             yield Center(Label("Set up a server"), classes="form-title")
-            yield Label(classes="form-error")
+            yield FormError()
             with Center():
                 with VerticalGroup(classes="form-field"):
                     yield Label("Username", classes="form-label")
@@ -167,7 +173,7 @@ class UsernamePromtScreen(Screen):
 
     async def on_button_pressed(self, _):
         username = self.query_one("#username", Input).value
-        form_error = self.query_one(".form-error", Label)
+        form_error = self.query_one(FormError)
         if not username:
             form_error.update("Please fill Username field")
             return
