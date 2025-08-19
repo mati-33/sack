@@ -13,7 +13,6 @@ from textual.containers import (
     Center,
     Container,
     VerticalGroup,
-    VerticalScroll,
     HorizontalGroup,
 )
 
@@ -25,7 +24,7 @@ from sack.models import (
     SackClientServerError,
     SackClientUsernameError,
 )
-from sack.components import TextInput, ChatMessage, ModalOption
+from sack.components import TextInput, ChatMessage, ModalOption, VimVerticalScroll
 
 
 if TYPE_CHECKING:
@@ -223,7 +222,7 @@ class ChatScreen(Screen):
                     yield Label(
                         "[$foreground-muted]sack[/] v0.1.0  [$foreground-muted]help[/] ctrl-?"
                     )
-            yield VerticalScroll(id="messages")
+            yield VimVerticalScroll(id="messages")
             with HorizontalGroup(id="input-wrapper"):
                 yield Label("[bold]>[/]", id="prompt-char")
                 yield TextInput(compact=True)
@@ -273,7 +272,7 @@ class ChatScreen(Screen):
     @on(MessageReceived)
     def on_message_received(self, event: MessageReceived):
         msg = event.msg
-        messages = self.query_one("#messages", VerticalScroll)
+        messages = self.query_one("#messages", VimVerticalScroll)
         if msg.type == "CONNECT":
             if msg.username == self.client.username:
                 return

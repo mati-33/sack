@@ -5,8 +5,9 @@ from textual import events
 from textual.app import ComposeResult
 from textual.color import Color
 from textual.widget import Widget
+from textual.binding import Binding
 from textual.widgets import Label, Button, Static, TextArea
-from textual.containers import Container, HorizontalGroup
+from textual.containers import Container, VerticalScroll, HorizontalGroup
 
 from sack.assets import SACK_ASCII
 
@@ -85,3 +86,14 @@ class ModalOption(HorizontalGroup):
         yield Label(">", classes="option-arrow")
         yield Label(self.label, classes="option-label")
         yield Button(id=self.option_key)
+
+
+class VimVerticalScroll(VerticalScroll):
+    BINDINGS = [
+        Binding("k", "scroll_up", "Scroll Up", show=False),
+        Binding("j", "scroll_down", "Scroll Down", show=False),
+        Binding("G", "scroll_home", "Scroll Home", show=False),
+        Binding("g", "scroll_end", "Scroll End", show=False),
+        Binding("u", "page_up", "Page Up", show=False),
+        Binding("d", "page_down", "Page Down", show=False),
+    ]
