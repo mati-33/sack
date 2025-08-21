@@ -78,7 +78,7 @@ class ServerPromptScreen(Screen):
         port = self.query_one("#port", Input).value
         form_error = self.query_one(FormError)
         if not port:
-            form_error.update("Please fill Port field")
+            form_error.update("Port is required")
             return
         port = int(port)
         assert isinstance(host, str)
@@ -96,9 +96,10 @@ class ServerPromptScreen(Screen):
         self.app.server_process = server_process
         server_process.start()
         if event.wait(0.1):
-            form_error.update("Could not start server, try changing port")
+            form_error.update("Port not available")
             return
 
+        form_error.reset()
         client = AsyncSackClient(host=host, port=port)
         await client.connect()
         self.app.client = client
@@ -137,10 +138,10 @@ class ClientPromptScreen(Screen):
         port = self.query_one("#port", Input).value
         form_error = self.query_one(FormError)
         if not host:
-            form_error.update("Please fill Host field")
+            form_error.update("Host is required")
             return
         if not port:
-            form_error.update("Please fill Port field")
+            form_error.update("Port is required")
             return
         port = int(port)
         assert isinstance(host, str)
@@ -156,6 +157,7 @@ class ClientPromptScreen(Screen):
             form_error.update("Server not found")
             return
 
+        form_error.reset()
         self.app.client = client
         self.app.push_screen(
             UsernamePromtScreen(
@@ -190,7 +192,7 @@ class UsernamePromtScreen(Screen):
         username = self.query_one("#username", Input).value
         form_error = self.query_one(FormError)
         if not username:
-            form_error.update("Please fill Username field")
+            form_error.update("Username is required")
             return
 
         client = self.app.client
@@ -202,6 +204,7 @@ class UsernamePromtScreen(Screen):
             form_error.update("Username already taken")
             return
 
+        form_error.reset()
         self.app.push_screen(ChatScreen())
 
 
