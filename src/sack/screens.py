@@ -52,7 +52,7 @@ class ServerPromptScreen(Screen):
     def compose(self) -> ComposeResult:
         with Center(id="form"):
             with Center(classes="form-title"):
-                yield Label("Set up a server")
+                yield Label("Create a server")
             yield FormError()
             with Center():
                 with VerticalGroup(classes="form-field"):
@@ -102,7 +102,12 @@ class ServerPromptScreen(Screen):
         client = AsyncSackClient(host=host, port=port)
         await client.connect()
         self.app.client = client
-        self.app.push_screen(UsernamePromtScreen())
+        self.app.push_screen(
+            UsernamePromtScreen(
+                form_title="Create a server",
+                button_label="Create",
+            )
+        )
 
 
 class ClientPromptScreen(Screen):
@@ -152,7 +157,12 @@ class ClientPromptScreen(Screen):
             return
 
         self.app.client = client
-        self.app.push_screen(UsernamePromtScreen())
+        self.app.push_screen(
+            UsernamePromtScreen(
+                form_title="Join server",
+                button_label="Join",
+            )
+        )
 
 
 class UsernamePromtScreen(Screen):
@@ -160,16 +170,21 @@ class UsernamePromtScreen(Screen):
 
     BINDINGS = COMMON_BINDINGS
 
+    def __init__(self, form_title: str, button_label: str) -> None:
+        super().__init__()
+        self.form_title = form_title
+        self.button_label = button_label
+
     def compose(self) -> ComposeResult:
         with Center(id="form"):
-            yield Center(Label("Set up a server"), classes="form-title")
+            yield Center(Label(self.form_title), classes="form-title")
             yield FormError()
             with Center():
                 with VerticalGroup(classes="form-field"):
                     yield Label("Username", classes="form-label")
                     yield Input(compact=True, id="username", max_length=15)
             with Right():
-                yield Button("Create", compact=True)
+                yield Button(self.button_label, compact=True)
 
     async def on_button_pressed(self, _):
         username = self.query_one("#username", Input).value
