@@ -25,8 +25,8 @@ from sack.models import (
     SackClientUsernameError,
 )
 from sack.components import (
-    FormError,
     TextInput,
+    FormErrors,
     ChatMessage,
     ModalOption,
     VimVerticalScroll,
@@ -53,7 +53,7 @@ class ServerPromptScreen(Screen):
         with Center(id="form"):
             with Center(classes="form-title"):
                 yield Label("Create a server")
-            yield FormError()
+            yield FormErrors()
             with Center():
                 with VerticalGroup(classes="form-field"):
                     yield Label("Host", classes="form-label")
@@ -72,13 +72,17 @@ class ServerPromptScreen(Screen):
             with Right():
                 yield Button("Next ->", compact=True)
 
+    def on_input_changed(self, _) -> None:
+        form_error = self.query_one(FormErrors)
+        form_error.reset()
+
     async def on_button_pressed(self, _):
         await self.app.cleanup()
         host = self.query_one("#host", Select).selection
         port = self.query_one("#port", Input).value
-        form_error = self.query_one(FormError)
+        form_error = self.query_one(FormErrors)
         if not port:
-            form_error.update("Port is required")
+            form_error.set_error(1, "Port is required")
             return
         port = int(port)
         assert isinstance(host, str)
@@ -96,7 +100,7 @@ class ServerPromptScreen(Screen):
         self.app.server_process = server_process
         server_process.start()
         if event.wait(0.1):
-            form_error.update("Port not available")
+            form_error.set_error(2, "Port not available")
             return
 
         form_error.reset()
@@ -120,7 +124,7 @@ class ClientPromptScreen(Screen):
         with Center(id="form"):
             with Center(classes="form-title"):
                 yield Label("Join server")
-            yield FormError()
+            yield FormErrors()
             with Center():
                 with VerticalGroup(classes="form-field"):
                     yield Label("Host", classes="form-label")
@@ -132,16 +136,25 @@ class ClientPromptScreen(Screen):
             with Right():
                 yield Button("Next ->", compact=True)
 
+    def on_input_changed(self, e: Input.Changed) -> None:
+        form_error = self.query_one(FormErrors)
+        form_error.clear_error(3)
+        match e.input.id:
+            case "host":
+                form_error.clear_error(1)
+            case "port":
+                form_error.clear_error(2)
+
     async def on_button_pressed(self, _):
         await self.app.cleanup()
         host = self.query_one("#host", Input).value
         port = self.query_one("#port", Input).value
-        form_error = self.query_one(FormError)
+        form_error = self.query_one(FormErrors)
         if not host:
-            form_error.update("Host is required")
-            return
+            form_error.set_error(1, "Host is required")
         if not port:
-            form_error.update("Port is required")
+            form_error.set_error(2, "Port is required")
+        if form_error.has_errors(1, 2):
             return
         port = int(port)
         assert isinstance(host, str)
@@ -152,9 +165,9 @@ class ClientPromptScreen(Screen):
         )
 
         try:
-            await client.connect()
+            await client.connect(timeout=0.1)
         except SackClientServerError:
-            form_error.update("Server not found")
+            form_error.set_error(3, "Server not found")
             return
 
         form_error.reset()
@@ -177,10 +190,14 @@ class UsernamePromtScreen(Screen):
         self.form_title = form_title
         self.button_label = button_label
 
+    def on_input_changed(self, _) -> None:
+        form_error = self.query_one(FormErrors)
+        form_error.reset()
+
     def compose(self) -> ComposeResult:
         with Center(id="form"):
             yield Center(Label(self.form_title), classes="form-title")
-            yield FormError()
+            yield FormErrors()
             with Center():
                 with VerticalGroup(classes="form-field"):
                     yield Label("Username", classes="form-label")
@@ -190,9 +207,9 @@ class UsernamePromtScreen(Screen):
 
     async def on_button_pressed(self, _):
         username = self.query_one("#username", Input).value
-        form_error = self.query_one(FormError)
+        form_error = self.query_one(FormErrors)
         if not username:
-            form_error.update("Username is required")
+            form_error.set_error(1, "Username is required")
             return
 
         client = self.app.client
@@ -201,7 +218,7 @@ class UsernamePromtScreen(Screen):
         try:
             await client.join_request()
         except SackClientUsernameError:
-            form_error.update("Username already taken")
+            form_error.set_error(2, "Username already taken")
             return
 
         form_error.reset()

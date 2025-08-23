@@ -92,25 +92,46 @@ class VimVerticalScroll(VerticalScroll):
     BINDINGS = [
         Binding("k", "scroll_up", "Scroll Up", show=False),
         Binding("j", "scroll_down", "Scroll Down", show=False),
-        Binding("G", "scroll_home", "Scroll Home", show=False),
-        Binding("g", "scroll_end", "Scroll End", show=False),
+        Binding("g", "scroll_home", "Scroll Home", show=False),
+        Binding("G", "scroll_end", "Scroll End", show=False),
         Binding("u", "page_up", "Page Up", show=False),
         Binding("d", "page_down", "Page Down", show=False),
     ]
 
 
-class FormError(Center):
+class FormErrors(Center):
+    def __init__(self):
+        super().__init__()
+        self._errors: dict[int, str] = {}
+
     def compose(self) -> ComposeResult:
         label = Label(classes="form-error")
         label.display = False
         yield label
 
     def reset(self) -> None:
-        label = self.query_one(".form-error", Label)
-        label.update("")
-        label.display = False
+        self._errors = {}
+        self._update(display=False)
 
-    def update(self, message: str) -> None:
+    def set_error(self, err_id: int, err_message: str):
+        self._errors[err_id] = err_message
+        self._update(display=True)
+
+    def clear_error(self, err_id: int) -> None:
+        if err_id not in self._errors:
+            return
+        del self._errors[err_id]
+        self._update(display=bool(self._errors))
+
+    def has_errors(self, *err_ids: int) -> bool:
+        if not err_ids:
+            return bool(self._errors)
+        for err_id in err_ids:
+            if err_id in self._errors:
+                return True
+        return False
+
+    def _update(self, *, display: bool) -> None:
         label = self.query_one(".form-error", Label)
-        label.update(message)
-        label.display = True
+        label.update("\n".join(self._errors.values()))
+        label.display = display

@@ -61,9 +61,10 @@ class AsyncSackClient:
         self.port = port
         self.username = username
 
-    async def connect(self) -> None:
+    async def connect(self, *, timeout: float | None = None) -> None:
         try:
-            reader, writer = await asyncio.open_connection(self.host, self.port)
+            async with asyncio.timeout(timeout):
+                reader, writer = await asyncio.open_connection(self.host, self.port)
         except Exception as e:
             raise SackClientServerError from e
         self._reader, self._writer = reader, writer
