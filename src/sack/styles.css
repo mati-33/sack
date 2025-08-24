@@ -80,18 +80,6 @@ SackHeader {
         }
     }
 
-    Select {
-        SelectOverlay{
-            background: $background !important;
-        } 
-        SelectCurrent {
-                background: $background !important;
-        }
-        &:focus > SelectCurrent {
-            background-tint: $foreground 0%;
-        }
-    }
-
     Button {
         margin-top: 1;
         background: $background;

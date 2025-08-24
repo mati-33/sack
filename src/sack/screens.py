@@ -1,3 +1,4 @@
+import socket
 import multiprocessing
 
 from typing import TYPE_CHECKING
@@ -7,7 +8,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen, ModalScreen
 from textual.binding import Binding
 from textual.message import Message
-from textual.widgets import Input, Label, Button, Select
+from textual.widgets import Input, Label, Button
 from textual.containers import (
     Right,
     Center,
@@ -57,17 +58,6 @@ class ServerPromptScreen(Screen):
             yield FormErrors()
             with Center():
                 with VerticalGroup(classes="form-field"):
-                    yield Label("Host", classes="form-label")
-                    yield Select(
-                        [("0.0.0.0", "0.0.0.0"), ("localhost", "localhost")],
-                        value="0.0.0.0",
-                        compact=True,
-                        allow_blank=False,
-                        classes="select",
-                        id="host",
-                    )
-            with Center():
-                with VerticalGroup(classes="form-field"):
                     yield Label("Port", classes="form-label")
                     yield Input(type="integer", compact=True, id="port", max_length=5)
             with Right():
@@ -79,13 +69,13 @@ class ServerPromptScreen(Screen):
 
     async def on_button_pressed(self, _):
         await self.app.cleanup()
-        host = self.query_one("#host", Select).selection
         port = self.query_one("#port", Input).value
         form_error = self.query_one(FormErrors)
         if not port:
             form_error.set_error(1, "Port is required")
             return
         port = int(port)
+        host = socket.gethostname()
         assert isinstance(host, str)
 
         event = multiprocessing.Event()
