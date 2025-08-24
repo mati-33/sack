@@ -25,10 +25,11 @@ from sack.models import (
     SackClientUsernameError,
 )
 from sack.components import (
+    Option,
+    Options,
     TextInput,
     FormErrors,
     ChatMessage,
-    ModalOption,
     VimVerticalScroll,
 )
 
@@ -52,7 +53,7 @@ class ServerPromptScreen(Screen):
     def compose(self) -> ComposeResult:
         with Center(id="form"):
             with Center(classes="form-title"):
-                yield Label("Create a server")
+                yield Label("Create server")
             yield FormErrors()
             with Center():
                 with VerticalGroup(classes="form-field"):
@@ -109,7 +110,7 @@ class ServerPromptScreen(Screen):
         self.app.client = client
         self.app.push_screen(
             UsernamePromtScreen(
-                form_title="Create a server",
+                form_title="Create server",
                 button_label="Create",
             )
         )
@@ -378,24 +379,21 @@ class ThemeChangeScreen(ModalScreen):
             with Center():
                 yield Label("Change theme", classes="modal-title")
             for theme in self.app.available_themes:
-                yield ModalOption(theme, theme)
+                yield Option(theme, theme)
 
 
 class MenuScreen(ModalScreen):
     app: "SackApp"
 
-    BINDINGS = COMMON_BINDINGS + [
-        Binding("down, tab, j", "app.focus_next"),
-        Binding("up, shift+tab, k", "app.focus_previous"),
-    ]
+    BINDINGS = COMMON_BINDINGS
 
     def compose(self) -> ComposeResult:
-        with Container(classes="modal"):
+        with Options(classes="modal"):
             with Center():
                 yield Label("Menu", classes="modal-title")
-            yield ModalOption("Exit app", "exit")
-            yield ModalOption("Exit to menu", "exit_to_menu")
-            yield ModalOption("Help", "help")
+            yield Option("Exit app", "exit")
+            yield Option("Exit to menu", "exit_to_menu")
+            yield Option("Help", "help")
 
     async def on_button_pressed(self, e: Button.Pressed):
         action_id = e.button.id

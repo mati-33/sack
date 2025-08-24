@@ -1,10 +1,9 @@
-from enum import StrEnum
 from multiprocessing import Process
 
 from textual.app import App, ComposeResult
 from textual.worker import Worker
 from textual.binding import Binding
-from textual.containers import Center
+from textual.widgets import Button
 
 from sack.models import AsyncSackClient
 from sack.screens import (
@@ -12,14 +11,7 @@ from sack.screens import (
     ClientPromptScreen,
     ServerPromptScreen,
 )
-from sack.components import MenuOption, SackHeader
-
-
-class MenuOptionLabels(StrEnum):
-    SERVER = "1"
-    JOIN_ROOM = "2"
-    ABOUT = "3"
-    EXIT = "q"
+from sack.components import Option, Options, SackHeader
 
 
 class SackApp(App):
@@ -30,9 +22,7 @@ class SackApp(App):
         "3": ThemeChangeScreen,
     }
     BINDINGS = [
-        Binding(MenuOptionLabels.SERVER, "push_screen('1')", "Server port prompt"),
-        Binding(MenuOptionLabels.JOIN_ROOM, "push_screen('2')", "Client prompt"),
-        Binding(MenuOptionLabels.EXIT, "exit", "Quit the app"),
+        Binding("q", "exit", "Quit the app"),
         Binding("ctrl+t", "push_screen('3')", "Change theme modal"),
     ]
     ENABLE_COMMAND_PALETTE = False
@@ -46,11 +36,12 @@ class SackApp(App):
 
     def compose(self) -> ComposeResult:
         yield from self.get_header()
-        with Center(id="options"):
-            yield MenuOption("Server", "󰒋", MenuOptionLabels.SERVER)
-            yield MenuOption("Join room", "", MenuOptionLabels.JOIN_ROOM)
-            yield MenuOption("About", "", MenuOptionLabels.ABOUT)
-            yield MenuOption("Exit", "󰅖", MenuOptionLabels.EXIT)
+        with Options(id="options"):
+            yield Option("Create server", "server")
+            yield Option("Join server", "join")
+            yield Option("Help", "help")
+            yield Option("About sack", "about")
+            yield Option("Exit", "exit")
 
     def action_exit(self):
         self.exit()
@@ -59,6 +50,19 @@ class SackApp(App):
         height = self.size.height
         header = self.query_one(SackHeader)
         header.display = height >= self.HEADER_BREAKPOINT
+
+    def on_button_pressed(self, e: Button.Pressed):
+        match e.button.id:
+            case "server":
+                self.push_screen("1")
+            case "join":
+                self.push_screen("2")
+            case "help":
+                return  # todo
+            case "about":
+                return  # todo
+            case "exit":
+                self.exit()
 
     def get_header(self):
         header = SackHeader()

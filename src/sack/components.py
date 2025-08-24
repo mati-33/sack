@@ -19,19 +19,6 @@ class SackHeader(HorizontalGroup):
         yield Static(classes="filler")
 
 
-class MenuOption(HorizontalGroup):
-    def __init__(self, text: str, icon: str, shortcut: str):
-        super().__init__()
-        self.text = text
-        self.icon = icon
-        self.shortcut = shortcut
-
-    def compose(self) -> ComposeResult:
-        yield Label(self.icon + " ")
-        yield Label(self.text + " ")
-        yield Label(self.shortcut + " ", classes="shortcut")
-
-
 class TextInput(TextArea):
     def _on_key(self, event: events.Key) -> None:
         new_line = "shift+enter"
@@ -76,7 +63,14 @@ class ChatMessage(Widget):
             )
 
 
-class ModalOption(HorizontalGroup):
+class Options(Center):
+    BINDINGS = [
+        Binding("down, tab, j", "app.focus_next"),
+        Binding("up, shift+tab, k", "app.focus_previous"),
+    ]
+
+
+class Option(HorizontalGroup):
     def __init__(self, label: str, option_key: str) -> None:
         super().__init__()
         self.label = label
