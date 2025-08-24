@@ -222,7 +222,7 @@ class ChatScreen(Screen):
     BINDINGS = [
         Binding("enter", "send", priority=True),
         Binding("ctrl+c", "quit", priority=True),
-        Binding("ctrl+underscore", "show_help", priority=True),
+        Binding("f1", "show_help", priority=True),
         Binding("ctrl+b", "to_menu", priority=True),
         Binding("escape", "open_menu"),
         Binding("ctrl+j", "app.focus_next", priority=True),
@@ -252,7 +252,7 @@ class ChatScreen(Screen):
                 )
                 with Right(id="right"):
                     yield Label(
-                        "[$foreground-muted]sack[/] v0.1.0  [$foreground-muted]help[/] ctrl-?"
+                        "[$foreground-muted]sack[/] v0.1.0  [$foreground-muted]help[/] f1"
                     )
             yield VimVerticalScroll(id="messages")
             with HorizontalGroup(id="input-wrapper"):
