@@ -13,7 +13,6 @@ from textual.containers import (
     Right,
     Center,
     Container,
-    VerticalGroup,
     HorizontalGroup,
 )
 
@@ -28,7 +27,9 @@ from sack.models import (
 from sack.components import (
     Option,
     Options,
+    FormField,
     TextInput,
+    FormButton,
     FormErrors,
     ChatMessage,
     VimVerticalScroll,
@@ -52,16 +53,12 @@ class ServerPromptScreen(Screen):
     BINDINGS = COMMON_BINDINGS
 
     def compose(self) -> ComposeResult:
-        with Center(id="form"):
-            with Center(classes="form-title"):
-                yield Label("Create server")
+        yield from self.app.get_header()
+        with Container(id="form"):
+            yield Label("Create server", classes="form-title")
             yield FormErrors()
-            with Center():
-                with VerticalGroup(classes="form-field"):
-                    yield Label("Port", classes="form-label")
-                    yield Input(type="integer", compact=True, id="port", max_length=5)
-            with Right():
-                yield Button("Next ->", compact=True)
+            yield FormField("port", "Port", type="integer", max_length=5)
+            yield FormButton("Next")
 
     def on_input_changed(self, _) -> None:
         form_error = self.query_one(FormErrors)
@@ -112,20 +109,13 @@ class ClientPromptScreen(Screen):
     BINDINGS = COMMON_BINDINGS
 
     def compose(self) -> ComposeResult:
-        with Center(id="form"):
-            with Center(classes="form-title"):
-                yield Label("Join server")
+        yield from self.app.get_header()
+        with Container(id="form"):
+            yield Label("Join server", classes="form-title")
             yield FormErrors()
-            with Center():
-                with VerticalGroup(classes="form-field"):
-                    yield Label("Host", classes="form-label")
-                    yield Input(compact=True, id="host")
-            with Center():
-                with VerticalGroup(classes="form-field"):
-                    yield Label("Port", classes="form-label")
-                    yield Input(type="integer", compact=True, id="port", max_length=5)
-            with Right():
-                yield Button("Next ->", compact=True)
+            yield FormField("host", "Host")
+            yield FormField("port", "Port", type="integer", max_length=5)
+            yield FormButton("Next")
 
     def on_input_changed(self, e: Input.Changed) -> None:
         form_error = self.query_one(FormErrors)
@@ -186,15 +176,12 @@ class UsernamePromtScreen(Screen):
         form_error.reset()
 
     def compose(self) -> ComposeResult:
-        with Center(id="form"):
-            yield Center(Label(self.form_title), classes="form-title")
+        yield from self.app.get_header()
+        with Container(id="form"):
+            yield Label(self.form_title, classes="form-title")
             yield FormErrors()
-            with Center():
-                with VerticalGroup(classes="form-field"):
-                    yield Label("Username", classes="form-label")
-                    yield Input(compact=True, id="username", max_length=15)
-            with Right():
-                yield Button(self.button_label, compact=True)
+            yield FormField("username", "Username", max_length=15)
+            yield FormButton(self.button_label)
 
     async def on_button_pressed(self, _):
         username = self.query_one("#username", Input).value

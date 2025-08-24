@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 from datetime import datetime
 
 from textual import events
@@ -6,7 +6,7 @@ from textual.app import ComposeResult
 from textual.color import Color
 from textual.widget import Widget
 from textual.binding import Binding
-from textual.widgets import Label, Button, Static, TextArea
+from textual.widgets import Input, Label, Button, Static, TextArea
 from textual.containers import Center, Container, VerticalScroll, HorizontalGroup
 
 from sack.assets import SACK_ASCII
@@ -63,7 +63,7 @@ class ChatMessage(Widget):
             )
 
 
-class Options(Center):
+class Options(Container):
     BINDINGS = [
         Binding("down, tab, j", "app.focus_next"),
         Binding("up, shift+tab, k", "app.focus_previous"),
@@ -129,3 +129,30 @@ class FormErrors(Center):
         label = self.query_one(".form-error", Label)
         label.update("\n".join(self._errors.values()))
         label.display = display
+
+
+class FormField(HorizontalGroup):
+    def __init__(self, id: str, label: str, **input_kwargs: Any) -> None:
+        super().__init__()
+        self.input_id = id
+        self.label = label
+        self.input_kwargs = input_kwargs
+
+    def compose(self) -> ComposeResult:
+        yield Label("> ", classes="option-arrow")
+        yield Label(self.label, classes="form-label")
+        yield Input(id=self.input_id, compact=True, **self.input_kwargs)  # type: ignore
+
+    @property
+    def value(self) -> str:
+        return self.query_one(Input).value
+
+
+class FormButton(HorizontalGroup):
+    def __init__(self, label: str) -> None:
+        super().__init__()
+        self.label = label
+
+    def compose(self) -> ComposeResult:
+        yield Label("> ")
+        yield Button(self.label, compact=True)

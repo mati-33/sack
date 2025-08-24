@@ -7,6 +7,8 @@ Screen {
 /* ===================================================================== */
 
 SackHeader {
+    dock: top;
+    margin-top: 3;
     #header {
         text-align: center;
         hatch: left $primary 50%;
@@ -19,10 +21,12 @@ SackHeader {
 }
 
 #options {
-    margin-top: 5;
+    margin-top: 3;
+    align: center top;
 
     Option {
         width: 70;
+        max-width: 80%;
         margin-bottom: 1;
     }
 }
@@ -30,69 +34,82 @@ SackHeader {
 /* ===================================================================== */
 
 #form {
-    width: 45;
-    border: solid $surface-lighten-1;
-    padding: 1;
-
-    & * {
-        max-width: 60;
-    }
+    width: 70;
+    max-width: 80%;
+    margin-top: 3;
+    align: center top;
 
     .form-title {
         margin-bottom: 1;
-        text-style: bold;
-        margin-left: 2;
+        margin-top: 1;
+        width: 100%;
     }
 
     .form-error {
         color: $error;
         margin-bottom: 1;
-        text-align: center;
-        width: 30;
+        width: 100%;
         background: red 10%;
     }
 
-    .form-label {
-        color: $foreground-muted;
-    }
+    FormField {
+        height: 1;
+        margin-bottom: 1;
 
-    .form-field {
-        height: 4;
-        width: 30;
-        padding-left: 1;
-        border: solid $surface-lighten-1;
+        .option-arrow {
+            text-opacity: 0%;
+        }
+
+        .form-label {
+            margin-right: 1;
+        }
 
         &:focus-within {
-            border: solid $primary 50%;
+            background: $primary 10%;
+            .option-arrow {
+                text-opacity: 100%;
+            }
         }
-    }
+        Input {
+            background: $background;
+            margin-bottom: 1;
 
-    Input {
-        background: $background !important;
-
-        &:focus {
-            background-tint: $background 0%;
-        }
-        &.-textual-compact {
-            &.-invalid {
-                background-tint: $error 0%;
+            &:focus {
+                background-tint: $background 0%;
+                background: $primary 0%;
+            }
+            &.-textual-compact {
+                &.-invalid {
+                    background-tint: $error 0%;
+                }
             }
         }
     }
 
-    Button {
-        margin-top: 1;
-        background: $background;
-        text-style: none;
-        border: solid $surface-lighten-1;
+    FormButton {
+        align: right middle;
+        width: 100%;
+        Label {
+            text-opacity: 0%;
+        }
 
-        &:focus {
-            background: $background !important;
-            border: solid $primary 50%;
-            background-tint: $foreground 0%;
-            text-style: bold;
+        &:focus-within {
+            Label {
+                background: $primary 10%;
+                text-opacity: 100%;
+            }
+        }
+        Button {
+            background: $background;
+            text-style: none;
+
+            &:focus {
+                background: $primary 10%;
+                background-tint: $foreground 0%;
+            }
         }
     }
+
 }
 
 /* ===================================================================== */
@@ -183,11 +200,14 @@ TextInput {
     border: solid $surface-lighten-1;
     height: auto;
     width: 40;
-    padding: 1;
+    padding: 0 1;
+
 
     .modal-title {
+        border-bottom: solid $primary 50%;
         margin-bottom: 1;
-        text-style: bold;
+        width: 100%;
+        text-align: center;
     }
 }
 
