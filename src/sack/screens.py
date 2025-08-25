@@ -8,7 +8,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen, ModalScreen
 from textual.binding import Binding
 from textual.message import Message
-from textual.widgets import Input, Label, Button
+from textual.widgets import Input, Label, Button, TabPane, TabbedContent
 from textual.containers import (
     Right,
     Center,
@@ -57,7 +57,7 @@ class ServerPromptScreen(Screen):
         with Container(id="form"):
             yield Label("Create server", classes="form-title")
             yield FormErrors()
-            yield FormField("port", "Port", type="integer", max_length=5)
+            yield FormField("port", "Port:", type="integer", max_length=5)
             yield FormButton("Next")
 
     def on_input_changed(self, _) -> None:
@@ -113,8 +113,8 @@ class ClientPromptScreen(Screen):
         with Container(id="form"):
             yield Label("Join server", classes="form-title")
             yield FormErrors()
-            yield FormField("host", "Host")
-            yield FormField("port", "Port", type="integer", max_length=5)
+            yield FormField("host", "Host:")
+            yield FormField("port", "Port:", type="integer", max_length=5)
             yield FormButton("Next")
 
     def on_input_changed(self, e: Input.Changed) -> None:
@@ -180,7 +180,7 @@ class UsernamePromtScreen(Screen):
         with Container(id="form"):
             yield Label(self.form_title, classes="form-title")
             yield FormErrors()
-            yield FormField("username", "Username", max_length=15)
+            yield FormField("username", "Username:", max_length=15)
             yield FormButton(self.button_label)
 
     async def on_button_pressed(self, _):

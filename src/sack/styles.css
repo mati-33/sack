@@ -43,13 +43,15 @@ SackHeader {
         margin-bottom: 1;
         margin-top: 1;
         width: 100%;
+        padding-left: 4;
     }
 
     .form-error {
         color: $error;
         margin-bottom: 1;
         width: 100%;
-        background: red 10%;
+        background: $error 10%;
+        padding-left: 4;
     }
 
     FormField {
@@ -57,6 +59,7 @@ SackHeader {
         margin-bottom: 1;
 
         .option-arrow {
+            padding-left: 2;
             text-opacity: 0%;
         }
 
