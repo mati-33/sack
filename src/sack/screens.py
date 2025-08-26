@@ -8,7 +8,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen, ModalScreen
 from textual.binding import Binding
 from textual.message import Message
-from textual.widgets import Input, Label, Button, TabPane, TabbedContent
+from textual.widgets import Input, Label, Button, ContentSwitcher
 from textual.containers import (
     Right,
     Center,
@@ -16,7 +16,7 @@ from textual.containers import (
     HorizontalGroup,
 )
 
-from sack.util import ColorsManager
+from sack.util import ColorsManager, make_keybinding_text
 from sack.models import (
     SackServer,
     SackMessage,
@@ -26,12 +26,14 @@ from sack.models import (
 )
 from sack.components import (
     Option,
+    HelpTab,
     Options,
     FormField,
     TextInput,
     FormButton,
     FormErrors,
     ChatMessage,
+    HelpKeybinding,
     VimVerticalScroll,
 )
 
@@ -258,7 +260,7 @@ class ChatScreen(Screen):
         self.app.exit()
 
     def action_show_help(self):
-        self.app.push_screen(ChatHelpScreen())
+        self.app.push_screen(HelpScreen())
 
     async def action_to_menu(self):
         await self.app.cleanup()
@@ -320,13 +322,72 @@ class ChatScreen(Screen):
             new_msg.scroll_visible()
 
 
-class ChatHelpScreen(ModalScreen):
-    BINDINGS = COMMON_BINDINGS
+class HelpScreen(ModalScreen):
+    BINDINGS = [
+        Binding("escape", "app.pop_screen"),
+        Binding("l", "tab_next"),
+        Binding("h", "tab_previous"),
+    ]
 
     def compose(self) -> ComposeResult:
-        with Container(classes="modal"):
-            with Center():
-                yield Label("Help", classes="modal-title")
+        with Container(classes="help"):
+            with HorizontalGroup(id="help-buttons"):
+                yield HelpTab("Welcome", "welcome")
+                yield HelpTab("Forms", "forms")
+                yield HelpTab("Chat", "chat_")
+            with ContentSwitcher(initial="welcome"):
+                with Container(id="welcome"):
+                    with Center():
+                        yield Label("Description", classes="help-subtitle")
+                    yield Label(
+                        "Some description for welcome goes here",
+                        classes="help-paragraph",
+                    )
+                    with Center():
+                        yield Label("Keybindings", classes="help-subtitle")
+                    yield HelpKeybinding("j", "Down")
+                    yield HelpKeybinding("k", "Up")
+                with Container(id="forms"):
+                    with Center():
+                        yield Label("Description", classes="help-subtitle")
+                    yield Label(
+                        "Some description for forms goes here", classes="help-paragraph"
+                    )
+                    with Center():
+                        yield Label("Keybindings", classes="help-subtitle")
+                    yield HelpKeybinding("ctrl+j", "Down")
+                    yield HelpKeybinding("ctrl+k", "Up")
+                with Container(id="chat_"):
+                    with Center():
+                        yield Label("Description", classes="help-subtitle")
+                    yield Label(
+                        "Some description for chat goes here", classes="help-paragraph"
+                    )
+                    with Center():
+                        yield Label("Keybindings", classes="help-subtitle")
+                    yield HelpKeybinding("ctrl+j", "Down")
+                    yield HelpKeybinding("ctrl+k", "Up")
+            yield Label(
+                make_keybinding_text(
+                    ("l", "next tab"),
+                    ("h", "previous tab"),
+                    ("esc", "esc"),
+                ),
+                id="help-footer",
+            )
+
+    def action_tab_next(self) -> None:
+        self.focus_next()
+        self.change_tab_from_focused()
+
+    def action_tab_previous(self) -> None:
+        self.focus_previous()
+        self.change_tab_from_focused()
+
+    def change_tab_from_focused(self):
+        focused = self.focused
+        if isinstance(focused, Button) and focused.id:
+            self.query_one(ContentSwitcher).current = focused.id
 
 
 class ThemeChangeScreen(ModalScreen):
@@ -383,7 +444,7 @@ class MenuScreen(ModalScreen):
             self.app.back_to_first_screen()
         elif action_id == "help":
             self.app.pop_screen()
-            self.app.push_screen(ChatHelpScreen())
+            self.app.push_screen(HelpScreen())
 
 
 class ServerDownScreen(ModalScreen):

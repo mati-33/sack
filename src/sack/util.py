@@ -29,3 +29,7 @@ class ColorsManager:
             )
         self._registry[username] = color
         return color
+
+
+def make_keybinding_text(*keybindings: tuple[str, str]):
+    return "  ".join(f"[$secondary]{key}[/] {desc}" for key, desc in keybindings)

@@ -3,10 +3,13 @@ from multiprocessing import Process
 from textual.app import App, ComposeResult
 from textual.worker import Worker
 from textual.binding import Binding
-from textual.widgets import Button
+from textual.widgets import Label, Button
+from textual.containers import Container
 
+from sack.util import make_keybinding_text
 from sack.models import AsyncSackClient
 from sack.screens import (
+    HelpScreen,
     ThemeChangeScreen,
     ClientPromptScreen,
     ServerPromptScreen,
@@ -20,16 +23,18 @@ class SackApp(App):
         "1": ServerPromptScreen,
         "2": ClientPromptScreen,
         "3": ThemeChangeScreen,
+        "4": HelpScreen,
     }
     BINDINGS = [
-        Binding("q", "exit", "Quit the app"),
-        Binding("ctrl+t", "push_screen('3')", "Change theme modal"),
+        Binding("ctrl+c", "exit"),
+        Binding("ctrl+t", "push_screen('3')"),
+        Binding("f1", "push_screen('4')"),
     ]
     ENABLE_COMMAND_PALETTE = False
 
     def __init__(self):
         super().__init__()
-        self.HEADER_BREAKPOINT = 25
+        self.HEADER_BREAKPOINT = 20
         self.server_process: Process | None = None
         self.client: AsyncSackClient | None = None
         self.message_worker: Worker | None = None
@@ -42,6 +47,17 @@ class SackApp(App):
             yield Option("Help", "help")
             yield Option("About sack", "about")
             yield Option("Exit", "exit")
+        with Container(id="footer-container"):
+            yield Label(
+                make_keybinding_text(
+                    ("j", "down"),
+                    ("k", "up"),
+                    ("Enter", "confirm"),
+                    ("ctrl+c", "exit"),
+                    ("f1", "help"),
+                ),
+                id="main-footer",
+            )
 
     def action_exit(self):
         self.exit()
@@ -58,7 +74,7 @@ class SackApp(App):
             case "join":
                 self.push_screen("2")
             case "help":
-                return  # todo
+                self.push_screen("4")
             case "about":
                 return  # todo
             case "exit":

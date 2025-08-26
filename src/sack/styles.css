@@ -9,6 +9,7 @@ Screen {
 SackHeader {
     dock: top;
     margin-top: 3;
+    margin-bottom: 3;
     #header {
         text-align: center;
         hatch: left $primary 50%;
@@ -21,7 +22,6 @@ SackHeader {
 }
 
 #options {
-    margin-top: 3;
     align: center top;
 
     Option {
@@ -31,12 +31,23 @@ SackHeader {
     }
 }
 
+#footer-container {
+    width: 100%;
+    dock: bottom;
+    height: 1;
+    align: center top;
+}
+
+#main-footer {
+    width: 70;
+    max-width: 80%;
+}
+
 /* ===================================================================== */
 
 #form {
     width: 70;
     max-width: 80%;
-    margin-top: 3;
     align: center top;
 
     .form-title {
@@ -205,32 +216,11 @@ TextInput {
     width: 40;
     padding: 0 1;
 
-
     .modal-title {
         border-bottom: solid $primary 50%;
         margin-bottom: 1;
         width: 100%;
         text-align: center;
-    }
-}
-
-.help-label{
-    width: 100%;
-    .help-keys {
-        width: 15;
-        text-align: right;
-        padding-right: 2;
-        color: $primary;
-    }
-    .help-desc {
-        width: 1fr;
-        text-align: left;
-    }
-    &.help-header {
-        text-style: bold;
-        .help-keys {
-            color: $text;
-        }
     }
 }
 
@@ -257,4 +247,71 @@ Option {
         border: none;
     }
 }
+
+/* ===================================================================== */
+
+.help {
+    height: 85%;
+    width: 80%;
+    max-width: 70;
+    border: solid $surface-lighten-1;
+}
+
+.help-subtitle {
+    margin-bottom: 1;
+}
+
+.help-paragraph {
+    margin-bottom: 1;
+}
+
+#help-footer {
+    padding-left: 2;
+}
+
+
+ContentSwitcher {
+    height: 1fr;
+    padding: 0 2;
+}
+
+HelpKeybinding {
+    .key {
+        width: 1fr;
+        text-align: right;
+        padding-right: 1;
+        color: $primary;
+    }
+    .desc {
+        width: 1fr;
+        text-align: left;
+        padding-left: 1;
+    }
+}
+
+#help-buttons {
+    border-bottom: solid $primary 50%;
+    HelpTab {
+        height: 1;
+        width: 15;
+        text-align: center;
+        Label {
+            width: 100%;
+            text-align: center;
+        }
+
+        &:focus-within {
+            background: $primary 10%;
+        }
+
+        Button {
+            height: 0;
+            width: 0;
+            padding: 0;
+            margin: 0;
+            border: none;
+        }
+    }
+}
+
 /* ===================================================================== */

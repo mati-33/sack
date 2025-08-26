@@ -156,3 +156,25 @@ class FormButton(HorizontalGroup):
     def compose(self) -> ComposeResult:
         yield Label("> ")
         yield Button(self.label, compact=True)
+
+
+class HelpTab(Container):
+    def __init__(self, label: str, tab_id: str) -> None:
+        super().__init__()
+        self.label = label
+        self.tab_id = tab_id
+
+    def compose(self) -> ComposeResult:
+        yield Label(self.label)
+        yield Button(id=self.tab_id)
+
+
+class HelpKeybinding(HorizontalGroup):
+    def __init__(self, key: str, desc: str) -> None:
+        super().__init__()
+        self.key = key
+        self.desc = desc
+
+    def compose(self) -> ComposeResult:
+        yield Label(self.key, classes="key")
+        yield Label(self.desc, classes="desc")
