@@ -61,6 +61,7 @@ class ServerPromptScreen(Screen):
             yield FormErrors()
             yield FormField("port", "Port:", type="integer", max_length=5)
             yield FormButton("Next")
+        yield from get_common_footer()
 
     def on_input_changed(self, _) -> None:
         form_error = self.query_one(FormErrors)
@@ -118,6 +119,7 @@ class ClientPromptScreen(Screen):
             yield FormField("host", "Host:")
             yield FormField("port", "Port:", type="integer", max_length=5)
             yield FormButton("Next")
+        yield from get_common_footer()
 
     def on_input_changed(self, e: Input.Changed) -> None:
         form_error = self.query_one(FormErrors)
@@ -184,6 +186,7 @@ class UsernamePromtScreen(Screen):
             yield FormErrors()
             yield FormField("username", "Username:", max_length=15)
             yield FormButton(self.button_label)
+        yield from get_common_footer()
 
     async def on_button_pressed(self, _):
         username = self.query_one("#username", Input).value
@@ -454,3 +457,18 @@ class ServerDownScreen(ModalScreen):
         with Container(classes="modal"):
             with Center():
                 yield Label("Connection to the server was lost", classes="modal-title")
+
+
+def get_common_footer():
+    with Container(id="footer-container"):
+        yield Label(
+            make_keybinding_text(
+                ("ctrl+j", "down"),
+                ("ctrl+k", "up"),
+                ("enter", "confirm"),
+                ("ctrl+c", "exit"),
+                ("esc", "back"),
+                ("f1", "help"),
+            ),
+            id="main-footer",
+        )
