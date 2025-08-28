@@ -17,6 +17,7 @@ from textual.containers import (
 )
 
 from sack.util import ColorsManager, make_keybinding_text
+from sack.assets import SACK_ABOUT
 from sack.models import (
     SackServer,
     SackMessage,
@@ -457,6 +458,26 @@ class ServerDownScreen(ModalScreen):
         with Container(classes="modal"):
             with Center():
                 yield Label("Connection to the server was lost", classes="modal-title")
+
+
+class AboutScreen(Screen):
+    app: "SackApp"
+
+    BINDINGS = [Binding("escape", "app.pop_screen")]
+
+    def compose(self) -> ComposeResult:
+        yield from self.app.get_header()
+        with Container(classes="container"):
+            yield Label(SACK_ABOUT)
+        with Container(id="footer-container"):
+            yield Label(
+                make_keybinding_text(
+                    ("esc", "back"),
+                    ("ctrl+c", "exit"),
+                    ("f1", "help"),
+                ),
+                id="main-footer",
+            )
 
 
 def get_common_footer():

@@ -10,6 +10,7 @@ from sack.util import make_keybinding_text
 from sack.models import AsyncSackClient
 from sack.screens import (
     HelpScreen,
+    AboutScreen,
     ThemeChangeScreen,
     ClientPromptScreen,
     ServerPromptScreen,
@@ -24,6 +25,7 @@ class SackApp(App):
         "2": ClientPromptScreen,
         "3": ThemeChangeScreen,
         "4": HelpScreen,
+        "5": AboutScreen,
     }
     BINDINGS = [
         Binding("ctrl+c", "exit"),
@@ -76,7 +78,7 @@ class SackApp(App):
             case "help":
                 self.push_screen("4")
             case "about":
-                return  # todo
+                self.push_screen("5")
             case "exit":
                 self.exit()
 
