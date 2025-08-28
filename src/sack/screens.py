@@ -8,11 +8,11 @@ from textual.app import ComposeResult
 from textual.screen import Screen, ModalScreen
 from textual.binding import Binding
 from textual.message import Message
-from textual.widgets import Input, Label, Button, ContentSwitcher
-from textual.containers import Right, Center, Container, HorizontalGroup
+from textual.widgets import Input, Label, Button, Static, ContentSwitcher
+from textual.containers import Right, Center, Container, VerticalScroll, HorizontalGroup, HorizontalScroll
 
 from sack.util import ColorsManager, make_keybinding_text
-from sack.assets import SACK_ABOUT
+from sack.assets import CHAT_HELP, JOIN_HELP, SACK_ABOUT, SERVER_HELP, WELCOME_HELP
 from sack.models import SackServer, SackMessage, AsyncSackClient, SackClientServerError, SackClientUsernameError
 from sack.components import (
     Option,
@@ -26,6 +26,7 @@ from sack.components import (
     HelpKeybinding,
     VimVerticalScroll,
 )
+from sack.keybindings import CHAT_KB, HELP_KB, ABOUT_KB, FORMS_KB, WELCOME_KB
 
 
 if TYPE_CHECKING:
@@ -192,7 +193,6 @@ class ChatScreen(Screen):
         Binding("enter", "send", priority=True),
         Binding("ctrl+c", "quit", priority=True),
         Binding("f1", "show_help", priority=True),
-        Binding("ctrl+b", "to_menu", priority=True),
         Binding("escape", "open_menu"),
         Binding("ctrl+j", "app.focus_next", priority=True),
         Binding("ctrl+k", "app.focus_previous", priority=True),
@@ -237,10 +237,6 @@ class ChatScreen(Screen):
 
     def action_show_help(self):
         self.app.push_screen(HelpScreen())
-
-    async def action_to_menu(self):
-        await self.app.cleanup()
-        self.app.back_to_first_screen()
 
     def action_open_menu(self):
         self.app.push_screen(MenuScreen())
@@ -298,47 +294,51 @@ class HelpScreen(ModalScreen):
         Binding("escape", "app.pop_screen"),
         Binding("l", "tab_next"),
         Binding("h", "tab_previous"),
+        Binding("j", "scroll_down"),
+        Binding("k", "scroll_up"),
     ]
 
     def compose(self) -> ComposeResult:
         with Container(classes="help"):
             with HorizontalGroup(id="help-buttons"):
                 yield HelpTab("Welcome", "welcome")
-                yield HelpTab("Forms", "forms")
+                yield HelpTab("Create server", "server")
+                yield HelpTab("Join server", "join")
                 yield HelpTab("Chat", "chat_")
             with ContentSwitcher(initial="welcome"):
-                with Container(id="welcome"):
+                with VerticalScroll(id="welcome", can_focus=False):
                     with Center():
                         yield Label("Description", classes="help-subtitle")
-                    yield Label("Some description for welcome goes here", classes="help-paragraph")
+                    yield Static(WELCOME_HELP, classes="help-paragraph")
                     with Center():
                         yield Label("Keybindings", classes="help-subtitle")
-                    yield HelpKeybinding("j", "Down")
-                    yield HelpKeybinding("k", "Up")
-                with Container(id="forms"):
+                    for key, desc in WELCOME_KB:
+                        yield HelpKeybinding(key, desc)
+                with VerticalScroll(id="server", can_focus=False):
                     with Center():
                         yield Label("Description", classes="help-subtitle")
-                    yield Label("Some description for forms goes here", classes="help-paragraph")
+                    yield Static(SERVER_HELP, classes="help-paragraph")
                     with Center():
                         yield Label("Keybindings", classes="help-subtitle")
-                    yield HelpKeybinding("ctrl+j", "Down")
-                    yield HelpKeybinding("ctrl+k", "Up")
-                with Container(id="chat_"):
+                    for key, desc in FORMS_KB:
+                        yield HelpKeybinding(key, desc)
+                with VerticalScroll(id="join", can_focus=False):
                     with Center():
                         yield Label("Description", classes="help-subtitle")
-                    yield Label("Some description for chat goes here", classes="help-paragraph")
+                    yield Static(JOIN_HELP, classes="help-paragraph")
                     with Center():
                         yield Label("Keybindings", classes="help-subtitle")
-                    yield HelpKeybinding("ctrl+j", "Down")
-                    yield HelpKeybinding("ctrl+k", "Up")
-            yield Label(
-                make_keybinding_text(
-                    ("l", "next tab"),
-                    ("h", "previous tab"),
-                    ("esc", "esc"),
-                ),
-                id="help-footer",
-            )
+                    for key, desc in FORMS_KB:
+                        yield HelpKeybinding(key, desc)
+                with VerticalScroll(id="chat_", can_focus=False):
+                    with Center():
+                        yield Label("Description", classes="help-subtitle")
+                    yield Static(CHAT_HELP, classes="help-paragraph")
+                    with Center():
+                        yield Label("Keybindings", classes="help-subtitle")
+                    for key, desc in CHAT_KB:
+                        yield HelpKeybinding(key, desc)
+            yield Label(make_keybinding_text(HELP_KB), id="help-footer")
 
     def action_tab_next(self) -> None:
         self.focus_next()
@@ -352,6 +352,20 @@ class HelpScreen(ModalScreen):
         focused = self.focused
         if isinstance(focused, Button) and focused.id:
             self.query_one(ContentSwitcher).current = focused.id
+
+    def action_scroll_up(self) -> None:
+        self.get_current_content().scroll_up()
+
+    def action_scroll_down(self) -> None:
+        self.get_current_content().scroll_down()
+
+    def get_current_content(self) -> VerticalScroll:
+        current_id = self.query_one(ContentSwitcher).current
+        scrolls = self.query(VerticalScroll)
+        for s in scrolls:
+            if s.id == current_id:
+                return s
+        raise AssertionError("")
 
 
 class ThemeChangeScreen(ModalScreen):
@@ -430,26 +444,9 @@ class AboutScreen(Screen):
         with Container(classes="container"):
             yield Label(SACK_ABOUT)
         with Container(id="footer-container"):
-            yield Label(
-                make_keybinding_text(
-                    ("esc", "back"),
-                    ("ctrl+c", "exit"),
-                    ("f1", "help"),
-                ),
-                id="main-footer",
-            )
+            yield Label(make_keybinding_text(ABOUT_KB), id="main-footer")
 
 
 def get_common_footer():
     with Container(id="footer-container"):
-        yield Label(
-            make_keybinding_text(
-                ("ctrl+j", "down"),
-                ("ctrl+k", "up"),
-                ("enter", "confirm"),
-                ("ctrl+c", "exit"),
-                ("esc", "back"),
-                ("f1", "help"),
-            ),
-            id="main-footer",
-        )
+        yield Label(make_keybinding_text(FORMS_KB), id="main-footer")

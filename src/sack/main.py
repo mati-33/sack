@@ -16,6 +16,7 @@ from sack.screens import (
     ServerPromptScreen,
 )
 from sack.components import Option, Options, SackHeader
+from sack.keybindings import WELCOME_KB
 
 
 class SackApp(App):
@@ -50,16 +51,7 @@ class SackApp(App):
             yield Option("About sack", "about")
             yield Option("Exit", "exit")
         with Container(id="footer-container"):
-            yield Label(
-                make_keybinding_text(
-                    ("j", "down"),
-                    ("k", "up"),
-                    ("Enter", "confirm"),
-                    ("ctrl+c", "exit"),
-                    ("f1", "help"),
-                ),
-                id="main-footer",
-            )
+            yield Label(make_keybinding_text(WELCOME_KB), id="main-footer")
 
     def action_exit(self):
         self.exit()

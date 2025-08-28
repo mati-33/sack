@@ -11,6 +11,10 @@ Screen {
     max-width: 80%;
 }
 
+VerticalScroll {
+    scrollbar-size-vertical: 1;
+}
+
 /* ===================================================================== */
 
 SackHeader {
@@ -270,6 +274,7 @@ Option {
 
 .help-paragraph {
     margin-bottom: 1;
+    text-overflow: fold;
 }
 
 #help-footer {

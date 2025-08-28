@@ -1,5 +1,7 @@
 import random
 
+from collections.abc import Collection
+
 from textual.color import Color
 
 
@@ -31,5 +33,5 @@ class ColorsManager:
         return color
 
 
-def make_keybinding_text(*keybindings: tuple[str, str]):
+def make_keybinding_text(keybindings: Collection[tuple[str, str]]):
     return "  ".join(f"[$secondary]{key}[/] {desc}" for key, desc in keybindings)
