@@ -9,22 +9,11 @@ from textual.screen import Screen, ModalScreen
 from textual.binding import Binding
 from textual.message import Message
 from textual.widgets import Input, Label, Button, ContentSwitcher
-from textual.containers import (
-    Right,
-    Center,
-    Container,
-    HorizontalGroup,
-)
+from textual.containers import Right, Center, Container, HorizontalGroup
 
 from sack.util import ColorsManager, make_keybinding_text
 from sack.assets import SACK_ABOUT
-from sack.models import (
-    SackServer,
-    SackMessage,
-    AsyncSackClient,
-    SackClientServerError,
-    SackClientUsernameError,
-)
+from sack.models import SackServer, SackMessage, AsyncSackClient, SackClientServerError, SackClientUsernameError
 from sack.components import (
     Option,
     HelpTab,
@@ -99,12 +88,7 @@ class ServerPromptScreen(Screen):
         client = AsyncSackClient(host=host, port=port)
         await client.connect()
         self.app.client = client
-        self.app.push_screen(
-            UsernamePromtScreen(
-                form_title="Create server",
-                button_label="Create",
-            )
-        )
+        self.app.push_screen(UsernamePromtScreen(form_title="Create server", button_label="Create"))
 
 
 class ClientPromptScreen(Screen):
@@ -145,10 +129,7 @@ class ClientPromptScreen(Screen):
         port = int(port)
         assert isinstance(host, str)
 
-        client = AsyncSackClient(
-            host=host,
-            port=port,
-        )
+        client = AsyncSackClient(host=host, port=port)
 
         try:
             await client.connect(timeout=0.1)
@@ -158,12 +139,7 @@ class ClientPromptScreen(Screen):
 
         form_error.reset()
         self.app.client = client
-        self.app.push_screen(
-            UsernamePromtScreen(
-                form_title="Join server",
-                button_label="Join",
-            )
-        )
+        self.app.push_screen(UsernamePromtScreen(form_title="Join server", button_label="Join"))
 
 
 class UsernamePromtScreen(Screen):
@@ -240,13 +216,9 @@ class ChatScreen(Screen):
     def compose(self) -> ComposeResult:
         with Container(id="chat"):
             with HorizontalGroup(id="chat-header"):
-                yield Label(
-                    f"[$foreground-muted]server[/] {self.client.host}:{self.client.port}"
-                )
+                yield Label(f"[$foreground-muted]server[/] {self.client.host}:{self.client.port}")
                 with Right(id="right"):
-                    yield Label(
-                        "[$foreground-muted]sack[/] v0.1.0  [$foreground-muted]help[/] f1"
-                    )
+                    yield Label("[$foreground-muted]sack[/] v0.1.0  [$foreground-muted]help[/] f1")
             yield VimVerticalScroll(id="messages")
             with HorizontalGroup(id="input-wrapper"):
                 yield Label("[bold]>[/]", id="prompt-char")
@@ -316,12 +288,7 @@ class ChatScreen(Screen):
             else:
                 orientation = "left"
                 color = self.colors_manager.get(msg.username)
-            new_msg = ChatMessage(
-                orientation=orientation,
-                msg=msg.text,
-                author=msg.username,
-                color=color,
-            )
+            new_msg = ChatMessage(orientation=orientation, msg=msg.text, author=msg.username, color=color)
             messages.mount(new_msg)
             new_msg.scroll_visible()
 
@@ -343,10 +310,7 @@ class HelpScreen(ModalScreen):
                 with Container(id="welcome"):
                     with Center():
                         yield Label("Description", classes="help-subtitle")
-                    yield Label(
-                        "Some description for welcome goes here",
-                        classes="help-paragraph",
-                    )
+                    yield Label("Some description for welcome goes here", classes="help-paragraph")
                     with Center():
                         yield Label("Keybindings", classes="help-subtitle")
                     yield HelpKeybinding("j", "Down")
@@ -354,9 +318,7 @@ class HelpScreen(ModalScreen):
                 with Container(id="forms"):
                     with Center():
                         yield Label("Description", classes="help-subtitle")
-                    yield Label(
-                        "Some description for forms goes here", classes="help-paragraph"
-                    )
+                    yield Label("Some description for forms goes here", classes="help-paragraph")
                     with Center():
                         yield Label("Keybindings", classes="help-subtitle")
                     yield HelpKeybinding("ctrl+j", "Down")
@@ -364,9 +326,7 @@ class HelpScreen(ModalScreen):
                 with Container(id="chat_"):
                     with Center():
                         yield Label("Description", classes="help-subtitle")
-                    yield Label(
-                        "Some description for chat goes here", classes="help-paragraph"
-                    )
+                    yield Label("Some description for chat goes here", classes="help-paragraph")
                     with Center():
                         yield Label("Keybindings", classes="help-subtitle")
                     yield HelpKeybinding("ctrl+j", "Down")

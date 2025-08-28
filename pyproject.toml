@@ -32,7 +32,10 @@ build-backend = "hatchling.build"
 
 [tool.pyright]
 include = ["src"]
-typeCheckingMode = "standard"
+typeCheckingMode = "basic"
+
+[tool.ruff]
+line-length = 120
 
 [tool.ruff.lint]
 select = [

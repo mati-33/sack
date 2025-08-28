@@ -50,17 +50,10 @@ class ChatMessage(Widget):
     def compose(self) -> ComposeResult:
         container = Container(classes="msg")
         if self.color:
-            setattr(
-                container.styles,
-                f"outline_{self.orientation}",
-                ("solid", self.color),
-            )
+            setattr(container.styles, f"outline_{self.orientation}", ("solid", self.color))
         with container:
             yield Label(self.msg, classes="msg-text")
-            yield Label(
-                f"{self.author} ({datetime.now().strftime('%H:%M')})",
-                classes="msg-author",
-            )
+            yield Label(f"{self.author} ({datetime.now().strftime('%H:%M')})", classes="msg-author")
 
 
 class Options(Container):

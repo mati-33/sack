@@ -10,9 +10,7 @@ class SackMessage:
     text: str | None
 
     @overload
-    def __init__(
-        self, type: Literal["CONNECT", "DISCONNECT"], username: str
-    ) -> None: ...
+    def __init__(self, type: Literal["CONNECT", "DISCONNECT"], username: str) -> None: ...
     @overload
     def __init__(self, type: Literal["TEXT"], username: str, text: str) -> None: ...
 

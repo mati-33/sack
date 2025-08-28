@@ -44,9 +44,7 @@ class SackServer:
         self._registry.register(self._STOP, selectors.EVENT_READ)
 
         def get_connections() -> list[socket.socket]:
-            return cast(
-                list[socket.socket], [key.fileobj for key in self._get_client_keys()]
-            )
+            return cast(list[socket.socket], [key.fileobj for key in self._get_client_keys()])
 
         self._broadcaster = Broadcaster(connections_getter=get_connections)
 
@@ -115,11 +113,7 @@ class SackServer:
         return receive_message(socket, on_empty)
 
     def _get_usernames(self) -> list[str]:
-        return [
-            username
-            for key in self._get_client_keys()
-            if (username := key.data.username)
-        ]
+        return [username for key in self._get_client_keys() if (username := key.data.username)]
 
     def _get_client_keys(self):
         for key in self._registry.get_map().values():
