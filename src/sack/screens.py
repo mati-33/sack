@@ -409,20 +409,19 @@ class MenuScreen(ModalScreen):
                 yield Label("Menu", classes="modal-title")
             yield Option("Exit app", "exit")
             yield Option("Exit to menu", "exit_to_menu")
-            yield Option("Help", "help")
+            yield Option("Help", "show_help")
 
     async def on_button_pressed(self, e: Button.Pressed):
-        action_id = e.button.id
-        assert action_id
-        if action_id == "exit":
-            await self.app.cleanup()
-            self.app.exit()
-        elif action_id == "exit_to_menu":
-            await self.app.cleanup()
-            self.app.back_to_first_screen()
-        elif action_id == "help":
-            self.app.pop_screen()
-            self.app.push_screen(HelpScreen())
+        match e.button.id:
+            case "exit":
+                await self.app.cleanup()
+                self.app.exit()
+            case "exit_to_menu":
+                await self.app.cleanup()
+                self.app.back_to_first_screen()
+            case "show_help":
+                self.app.pop_screen()
+                self.app.push_screen(HelpScreen())
 
 
 class ServerDownScreen(ModalScreen):
