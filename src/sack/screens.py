@@ -307,32 +307,24 @@ class HelpScreen(ModalScreen):
                 yield HelpTab("Chat", "chat_")
             with ContentSwitcher(initial="welcome"):
                 with VerticalScroll(id="welcome", can_focus=False):
-                    with Center():
-                        yield Label("Description", classes="help-subtitle")
                     yield Static(WELCOME_HELP, classes="help-paragraph")
                     with Center():
                         yield Label("Keybindings", classes="help-subtitle")
                     for key, desc in WELCOME_KB:
                         yield HelpKeybinding(key, desc)
                 with VerticalScroll(id="server", can_focus=False):
-                    with Center():
-                        yield Label("Description", classes="help-subtitle")
                     yield Static(SERVER_HELP, classes="help-paragraph")
                     with Center():
                         yield Label("Keybindings", classes="help-subtitle")
                     for key, desc in FORMS_KB:
                         yield HelpKeybinding(key, desc)
                 with VerticalScroll(id="join", can_focus=False):
-                    with Center():
-                        yield Label("Description", classes="help-subtitle")
                     yield Static(JOIN_HELP, classes="help-paragraph")
                     with Center():
                         yield Label("Keybindings", classes="help-subtitle")
                     for key, desc in FORMS_KB:
                         yield HelpKeybinding(key, desc)
                 with VerticalScroll(id="chat_", can_focus=False):
-                    with Center():
-                        yield Label("Description", classes="help-subtitle")
                     yield Static(CHAT_HELP, classes="help-paragraph")
                     with Center():
                         yield Label("Keybindings", classes="help-subtitle")

@@ -268,11 +268,8 @@ Option {
     border: solid $surface-lighten-1;
 }
 
-.help-subtitle {
-    margin-bottom: 1;
-}
-
 .help-paragraph {
+    margin-top: 1;
     margin-bottom: 1;
     text-overflow: fold;
 }
