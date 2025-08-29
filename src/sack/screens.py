@@ -89,7 +89,7 @@ class ServerPromptScreen(Screen):
         client = AsyncSackClient(host=host, port=port)
         await client.connect()
         self.app.client = client
-        self.app.push_screen(UsernamePromtScreen(form_title="Create server", button_label="Create"))
+        self.app.push_screen(NicknamePromtScreen(form_title="Create server", button_label="Create"))
 
 
 class ClientPromptScreen(Screen):
@@ -140,10 +140,10 @@ class ClientPromptScreen(Screen):
 
         form_error.reset()
         self.app.client = client
-        self.app.push_screen(UsernamePromtScreen(form_title="Join server", button_label="Join"))
+        self.app.push_screen(NicknamePromtScreen(form_title="Join server", button_label="Join"))
 
 
-class UsernamePromtScreen(Screen):
+class NicknamePromtScreen(Screen):
     app: "SackApp"
 
     BINDINGS = COMMON_BINDINGS
@@ -162,24 +162,24 @@ class UsernamePromtScreen(Screen):
         with Container(id="form"):
             yield Label(self.form_title, classes="form-title")
             yield FormErrors()
-            yield FormField("username", "Username:", max_length=15)
+            yield FormField("nickname", "Nickname:", max_length=15)
             yield FormButton(self.button_label)
         yield from get_common_footer()
 
     async def on_button_pressed(self, _):
-        username = self.query_one("#username", Input).value
+        nickname = self.query_one("#nickname", Input).value
         form_error = self.query_one(FormErrors)
-        if not username:
-            form_error.set_error(1, "Username is required")
+        if not nickname:
+            form_error.set_error(1, "Nickname is required")
             return
 
         client = self.app.client
         assert client
-        client.username = username
+        client.username = nickname
         try:
             await client.join_request()
         except SackClientUsernameError:
-            form_error.set_error(2, "Username already taken")
+            form_error.set_error(2, "Nickname already taken")
             return
 
         form_error.reset()
