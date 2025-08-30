@@ -15,7 +15,7 @@ from sack.assets import SACK_ASCII
 class SackHeader(HorizontalGroup):
     def compose(self) -> ComposeResult:
         yield Static(classes="filler")
-        yield Static(SACK_ASCII, id="header")
+        yield Static(SACK_ASCII, id="header", classes="container")
         yield Static(classes="filler")
 
 
@@ -68,6 +68,7 @@ class Option(HorizontalGroup):
         super().__init__()
         self.label = label
         self.option_key = option_key
+        self.add_class("container")
 
     def compose(self) -> ComposeResult:
         yield Label(">", classes="option-arrow")

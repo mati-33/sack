@@ -9,7 +9,7 @@ from textual.screen import Screen, ModalScreen
 from textual.binding import Binding
 from textual.message import Message
 from textual.widgets import Input, Label, Button, Static, ContentSwitcher
-from textual.containers import Right, Center, Container, VerticalScroll, HorizontalGroup, HorizontalScroll
+from textual.containers import Right, Center, Container, VerticalScroll, HorizontalGroup
 
 from sack.util import ColorsManager, make_keybinding_text
 from sack.assets import CHAT_HELP, JOIN_HELP, SACK_ABOUT, SERVER_HELP, WELCOME_HELP
@@ -47,7 +47,7 @@ class ServerPromptScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield from self.app.get_header()
-        with Container(id="form"):
+        with Container(id="form", classes="container"):
             yield Label("Create server", classes="form-title")
             yield FormErrors()
             yield FormField("port", "Port:", type="integer", max_length=5)
@@ -99,7 +99,7 @@ class ClientPromptScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield from self.app.get_header()
-        with Container(id="form"):
+        with Container(id="form", classes="container"):
             yield Label("Join server", classes="form-title")
             yield FormErrors()
             yield FormField("host", "Host:")
@@ -159,7 +159,7 @@ class NicknamePromtScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield from self.app.get_header()
-        with Container(id="form"):
+        with Container(id="form", classes="container"):
             yield Label(self.form_title, classes="form-title")
             yield FormErrors()
             yield FormField("nickname", "Nickname:", max_length=15)
@@ -435,9 +435,9 @@ class AboutScreen(Screen):
         with Container(classes="container"):
             yield Label(SACK_ABOUT)
         with Container(id="footer-container"):
-            yield Label(make_keybinding_text(ABOUT_KB), id="main-footer")
+            yield Label(make_keybinding_text(ABOUT_KB), classes="container")
 
 
 def get_common_footer():
     with Container(id="footer-container"):
-        yield Label(make_keybinding_text(FORMS_KB), id="main-footer")
+        yield Label(make_keybinding_text(FORMS_KB), classes="container")

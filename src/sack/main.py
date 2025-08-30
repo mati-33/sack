@@ -51,7 +51,7 @@ class SackApp(App):
             yield Option("About sack", "about")
             yield Option("Exit", "exit")
         with Container(id="footer-container"):
-            yield Label(make_keybinding_text(WELCOME_KB), id="main-footer")
+            yield Label(make_keybinding_text(WELCOME_KB), classes="container")
 
     def action_exit(self):
         self.exit()

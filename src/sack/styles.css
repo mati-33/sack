@@ -4,15 +4,17 @@ Screen {
     align: center middle;
 }
 
+VerticalScroll {
+    scrollbar-size-vertical: 1;
+}
+
 /* ===================================================================== */
+
+$highlight: $primary 10%;
 
 .container {
     width: 70;
     max-width: 80%;
-}
-
-VerticalScroll {
-    scrollbar-size-vertical: 1;
 }
 
 /* ===================================================================== */
@@ -24,8 +26,6 @@ SackHeader {
     #header {
         text-align: center;
         hatch: left $primary 50%;
-        width: 70;
-        max-width: 80%;
     }
     Static {
         width: 1fr;
@@ -36,8 +36,6 @@ SackHeader {
     align: center top;
 
     Option {
-        width: 70;
-        max-width: 80%;
         margin-bottom: 1;
     }
 }
@@ -49,16 +47,9 @@ SackHeader {
     align: center top;
 }
 
-#main-footer {
-    width: 70;
-    max-width: 80%;
-}
-
 /* ===================================================================== */
 
 #form {
-    width: 70;
-    max-width: 80%;
     align: center top;
 
     .form-title {
@@ -90,7 +81,7 @@ SackHeader {
         }
 
         &:focus-within {
-            background: $primary 10%;
+            background: $highlight;
             .option-arrow {
                 text-opacity: 100%;
             }
@@ -120,7 +111,7 @@ SackHeader {
 
         &:focus-within {
             Label {
-                background: $primary 10%;
+                background: $highlight;
                 text-opacity: 100%;
             }
         }
@@ -129,12 +120,11 @@ SackHeader {
             text-style: none;
 
             &:focus {
-                background: $primary 10%;
+                background: $highlight;
                 background-tint: $foreground 0%;
             }
         }
     }
-
 }
 
 /* ===================================================================== */
@@ -246,7 +236,7 @@ Option {
             text-opacity: 100%;
         }
         &:focus-within {
-            background: $primary 10%;
+            background: $highlight;
         }
     }
 
@@ -277,7 +267,6 @@ Option {
 #help-footer {
     padding-left: 2;
 }
-
 
 ContentSwitcher {
     height: 1fr;
@@ -310,7 +299,7 @@ HelpKeybinding {
         }
 
         &:focus-within {
-            background: $primary 10%;
+            background: $highlight;
         }
 
         Button {
