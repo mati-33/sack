@@ -1,18 +1,18 @@
 [project]
 name = "sack"
-version = "0.1.0"
-description = "Python socket chat"
+version = "1.0.0"
+description = "Lightweight chat application for terminal"
 readme = "README.md"
 authors = [
-    { name = "mati", email = "mati@mati.com" }
+    { name = "mati", email = "mateusz.meksula@gmail.com" }
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 dependencies = [
     "textual>=3.5.0",
 ]
 keywords = ["chat", "socket", "tui"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
@@ -24,7 +24,6 @@ Repository = "https://github.com/mati-33/sack"
 
 [project.scripts]
 sack = "sack.main:main"
-sackdev = "sack.dev:main"
 
 [build-system]
 requires = ["hatchling"]
