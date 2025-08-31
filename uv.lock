@@ -685,7 +685,6 @@ wheels = [
 
 [[package]]
 name = "sack-chat"
-version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "textual" },
