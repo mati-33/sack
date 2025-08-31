@@ -1,6 +1,6 @@
 [project]
 name = "sack-chat"
-version = "1.0.0"
+dynamic = ["version"]
 description = "Lightweight chat application for terminal"
 readme = "README.md"
 authors = [
@@ -31,6 +31,9 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sack"]
+
+[tool.hatch.version]
+path = "src/sack/__init__.py"
 
 [tool.pyright]
 include = ["src"]

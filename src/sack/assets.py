@@ -1,10 +1,13 @@
+from sack import __version__
+
+
 SACK_ASCII = r"""
 █▀ ▄▀█ █▀▀ █▄▀
 ▄█ █▀█ █▄▄ █ █
 """
 
-SACK_ABOUT = """
-version: 1.0.0
+SACK_ABOUT = f"""
+version: {__version__}
 
 sack is an open-source chat application for the terminal,
 built with the Textual framework and TCP sockets.
