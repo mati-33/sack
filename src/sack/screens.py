@@ -73,7 +73,7 @@ class ServerPromptScreen(Screen):
 
         def server_launcher():
             try:
-                with SackServer(host, port) as server:
+                with SackServer("0.0.0.0", port) as server:
                     server.serve()
             except Exception:
                 event.set()
