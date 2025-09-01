@@ -135,10 +135,8 @@ SackHeader {
     max-width: 95%;
 }
 
-#chat-header {
-    width: 100%;
-    height: 2;
-    border-bottom: solid $surface-lighten-1;
+ChatHeader {
+    margin-bottom: 1;
 }
 
 #messages {

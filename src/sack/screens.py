@@ -20,6 +20,7 @@ from sack.components import (
     Options,
     FormField,
     TextInput,
+    ChatHeader,
     FormButton,
     FormErrors,
     ChatMessage,
@@ -215,10 +216,7 @@ class ChatScreen(Screen):
 
     def compose(self) -> ComposeResult:
         with Container(id="chat"):
-            with HorizontalGroup(id="chat-header"):
-                yield Label(f"[$foreground-muted]server[/] {self.client.host}:{self.client.port}")
-                with Right(id="right"):
-                    yield Label("[$foreground-muted]sack[/] v0.1.0  [$foreground-muted]help[/] f1")
+            yield ChatHeader(self.client.host, self.client.port)
             yield VimVerticalScroll(id="messages")
             with HorizontalGroup(id="input-wrapper"):
                 yield Label("[bold]>[/]", id="prompt-char")

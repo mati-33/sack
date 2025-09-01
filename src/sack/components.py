@@ -7,8 +7,9 @@ from textual.color import Color
 from textual.widget import Widget
 from textual.binding import Binding
 from textual.widgets import Input, Label, Button, Static, TextArea
-from textual.containers import Center, Container, VerticalScroll, HorizontalGroup
+from textual.containers import Right, Center, Container, VerticalScroll, HorizontalGroup
 
+from sack import __version__
 from sack.assets import SACK_ASCII
 
 
@@ -172,3 +173,15 @@ class HelpKeybinding(HorizontalGroup):
     def compose(self) -> ComposeResult:
         yield Label(self.key, classes="key")
         yield Label(self.desc, classes="desc")
+
+
+class ChatHeader(HorizontalGroup):
+    def __init__(self, host: str, port: int) -> None:
+        super().__init__()
+        self.host = host
+        self.port = port
+
+    def compose(self) -> ComposeResult:
+        yield Label(f"[$secondary]server[/] {self.host}:{self.port}")
+        with Right(id="right"):
+            yield Label(f"[$secondary]sack[/] v{__version__}  [$secondary]help[/] f1")
