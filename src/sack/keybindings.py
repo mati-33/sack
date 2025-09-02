@@ -34,6 +34,8 @@ CHAT_KB = [
     ("ctrl+k", "focus down"),
     ("enter", "send message"),
     ("shift+enter", "new line"),
+    ("ctrl+s", "toggle sidebar"),
+    ("ctrl+t", "change theme"),
     ("ctrl+c", "exit"),
     ("esc", "menu"),
     ("f1", "help"),

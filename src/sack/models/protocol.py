@@ -5,10 +5,12 @@ from collections.abc import Callable
 
 
 class SackMessage:
-    type: Literal["CONNECT", "DISCONNECT", "TEXT"]
+    type: Literal["CONNECT", "DISCONNECT", "TEXT", "GETNICKNAMES"]
     username: str
     text: str | None
 
+    @overload
+    def __init__(self, type: Literal["GETNICKNAMES"], username: str, text: str | None = None): ...
     @overload
     def __init__(self, type: Literal["CONNECT", "DISCONNECT"], username: str) -> None: ...
     @overload
@@ -22,7 +24,7 @@ class SackMessage:
     def to_bytes(self) -> bytes:
         message = f"{self.type}\n{self.username}".encode()
         message = len(message).to_bytes(1, "big") + message
-        if self.type != "TEXT":
+        if self.text is None:
             return message
         assert self.text is not None
         text = self.text.encode()
@@ -42,7 +44,7 @@ def receive_message(socket: socket.socket, on_empty: Callable) -> SackMessage | 
         return None
     type = message_parts[0]
     username = message_parts[1]
-    if type not in ("CONNECT", "TEXT", "DISCONNECT"):
+    if type not in ("CONNECT", "TEXT", "DISCONNECT", "GETNICKNAMES"):
         return None
     if type != "TEXT":
         return SackMessage(type, username)

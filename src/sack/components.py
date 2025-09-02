@@ -175,6 +175,12 @@ class HelpKeybinding(HorizontalGroup):
         yield Label(self.desc, classes="desc")
 
 
+class ChatSidebar(Container):
+    def compose(self) -> ComposeResult:
+        yield Label(SACK_ASCII, classes="ascii")
+        yield Container(id="sidebar-users", classes="users")
+
+
 class ChatHeader(HorizontalGroup):
     def __init__(self, host: str, port: int) -> None:
         super().__init__()

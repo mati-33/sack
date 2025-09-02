@@ -89,6 +89,12 @@ class AsyncSackClient:
         self._writer.write(msg.to_bytes())
         await self._writer.drain()
 
+    async def request_nicknames(self) -> None:
+        assert self.username
+        msg = SackMessage("GETNICKNAMES", self.username)
+        self._writer.write(msg.to_bytes())
+        await self._writer.drain()
+
     async def receive_message(self) -> SackMessage | None:
         message_len = await self._reader.read(1)
         if not message_len:
@@ -101,9 +107,9 @@ class AsyncSackClient:
             return None
         type = message_parts[0]
         username = message_parts[1]
-        if type not in ("CONNECT", "TEXT", "DISCONNECT"):
+        if type not in ("CONNECT", "TEXT", "DISCONNECT", "GETNICKNAMES"):
             return None
-        if type != "TEXT":
+        if type not in ("TEXT", "GETNICKNAMES"):
             return SackMessage(type, username)
         sep = await self._reader.read(1)
         if sep != b"\n":

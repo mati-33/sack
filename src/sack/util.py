@@ -3,6 +3,10 @@ import random
 from collections.abc import Collection
 
 from textual.color import Color
+from textual.widgets import Label
+from textual.containers import Container
+
+from sack.keybindings import FORMS_KB
 
 
 class ColorsManager:
@@ -35,3 +39,21 @@ class ColorsManager:
 
 def make_keybinding_text(keybindings: Collection[tuple[str, str]]):
     return "  ".join(f"[$secondary]{key}[/] {desc}" for key, desc in keybindings)
+
+
+def get_common_footer():
+    with Container(id="footer-container"):
+        yield Label(make_keybinding_text(FORMS_KB), classes="container")
+
+
+def get_sidebar_user(username: str, color: Color, *, is_you: bool = False):
+    color_ = color.hex
+    username_label = username
+    if is_you:
+        color_ = "$primary"
+        username_label = f"{username} (you)"
+    return Label(f"[{color_}]::[/] {username_label}", id=get_id_from_color(color))
+
+
+def get_id_from_color(color: Color):
+    return color.hex.replace("#", "_")

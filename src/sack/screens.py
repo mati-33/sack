@@ -2,6 +2,7 @@ import socket
 import multiprocessing
 
 from typing import TYPE_CHECKING
+from contextlib import suppress
 
 from textual import on
 from textual.app import ComposeResult
@@ -9,9 +10,9 @@ from textual.screen import Screen, ModalScreen
 from textual.binding import Binding
 from textual.message import Message
 from textual.widgets import Input, Label, Button, Static, ContentSwitcher
-from textual.containers import Right, Center, Container, VerticalScroll, HorizontalGroup
+from textual.containers import Center, Container, VerticalScroll, HorizontalGroup
 
-from sack.util import ColorsManager, make_keybinding_text
+from sack.util import ColorsManager, get_sidebar_user, get_common_footer, get_id_from_color, make_keybinding_text
 from sack.assets import CHAT_HELP, JOIN_HELP, SACK_ABOUT, SERVER_HELP, WELCOME_HELP
 from sack.models import SackServer, SackMessage, AsyncSackClient, SackClientServerError, SackClientUsernameError
 from sack.components import (
@@ -24,6 +25,7 @@ from sack.components import (
     FormButton,
     FormErrors,
     ChatMessage,
+    ChatSidebar,
     HelpKeybinding,
     VimVerticalScroll,
 )
@@ -197,7 +199,11 @@ class ChatScreen(Screen):
         Binding("escape", "open_menu"),
         Binding("ctrl+j", "app.focus_next", priority=True),
         Binding("ctrl+k", "app.focus_previous", priority=True),
+        Binding("ctrl+s", "toggle_sidebar"),
     ]
+
+    def action_toggle_sidebar(self) -> None:
+        self.query_one(ChatSidebar).toggle_class("hidden")
 
     class MessageReceived(Message):
         def __init__(self, msg: SackMessage) -> None:
@@ -215,6 +221,7 @@ class ChatScreen(Screen):
         self.colors_manager = ColorsManager()
 
     def compose(self) -> ComposeResult:
+        yield ChatSidebar()
         with Container(id="chat"):
             yield ChatHeader(self.client.host, self.client.port)
             yield VimVerticalScroll(id="messages")
@@ -239,9 +246,10 @@ class ChatScreen(Screen):
     def action_open_menu(self):
         self.app.push_screen(MenuScreen())
 
-    def on_mount(self):
+    async def on_mount(self):
         self.app.message_worker = self.run_worker(self.update_messages)
         self.query_one(TextInput).focus()
+        await self.client.request_nicknames()
 
     async def update_messages(self):
         while True:
@@ -264,16 +272,23 @@ class ChatScreen(Screen):
     def on_message_received(self, event: MessageReceived):
         msg = event.msg
         messages = self.query_one("#messages", VimVerticalScroll)
+        users = self.query_one("#sidebar-users", Container)
         if msg.type == "CONNECT":
             if msg.username == self.client.username:
                 return
             notif = Label(f"{msg.username} joined", classes="notification")
+            user = get_sidebar_user(msg.username, self.colors_manager.get(msg.username))
             messages.mount(notif)
+            users.mount(user)
             notif.scroll_visible()
         if msg.type == "DISCONNECT":
             notif = Label(f"{msg.username} disconnected", classes="notification")
             messages.mount(notif)
             notif.scroll_visible()
+            color = self.colors_manager.get(msg.username)
+            with suppress(Exception):
+                user = users.query_one(f"#{get_id_from_color(color)}")
+                user.remove()
         if msg.type == "TEXT":
             assert msg.text
             if msg.username == self.username:
@@ -285,6 +300,10 @@ class ChatScreen(Screen):
             new_msg = ChatMessage(orientation=orientation, msg=msg.text, author=msg.username, color=color)
             messages.mount(new_msg)
             new_msg.scroll_visible()
+        if msg.type == "GETNICKNAMES":
+            assert msg.text
+            for u in msg.text.split("\n"):
+                users.mount(get_sidebar_user(u, self.colors_manager.get(u), is_you=u == self.client.username))
 
 
 class HelpScreen(ModalScreen):
@@ -434,8 +453,3 @@ class AboutScreen(Screen):
             yield Label(SACK_ABOUT)
         with Container(id="footer-container"):
             yield Label(make_keybinding_text(ABOUT_KB), classes="container")
-
-
-def get_common_footer():
-    with Container(id="footer-container"):
-        yield Label(make_keybinding_text(FORMS_KB), classes="container")

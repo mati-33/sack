@@ -206,6 +206,31 @@ TextInput {
     }
 }
 
+ChatSidebar {
+    .ascii {
+        text-align: center;
+        padding-left: 2;
+        width: 100%;
+        margin-bottom: 1;
+    }
+
+    .users {
+        padding-left: 3;
+        Label {
+            margin-bottom: 1;
+        }
+    }
+
+    &.hidden {
+        display: none;
+    }
+
+    width: 30;
+    height: 100%;
+    dock: left;
+    border-right: solid $surface-lighten-1;
+}
+
 /* ===================================================================== */
 
 .modal {

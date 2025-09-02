@@ -90,6 +90,11 @@ class SackServer:
                         else:
                             key.fileobj.sendall(b"OK")
                             key.data.username = message.username
+                    if message.type == "GETNICKNAMES":
+                        ret = "\n".join(self._get_usernames())
+                        msg = SackMessage("GETNICKNAMES", key.data.username, ret)
+                        key.fileobj.sendall(msg.to_bytes())
+                        continue
 
                     self._broadcaster.broadcast(message.to_bytes())
 
